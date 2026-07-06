@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1781625675806,
+      "tag": "0000_wide_liz_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781713848991,
+      "tag": "0001_parallel_omega_red",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781715128177,
+      "tag": "0002_married_diamondback",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781783736079,
+      "tag": "0003_harsh_radioactive_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781972716548,
+      "tag": "0004_massive_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783072543455,
+      "tag": "0005_large_firedrake",
+      "breakpoints": true
+    }
+  ]
+}

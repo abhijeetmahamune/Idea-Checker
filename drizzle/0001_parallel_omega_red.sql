@@ -1,0 +1,1 @@
+ALTER TABLE "evaluations" DROP CONSTRAINT "evaluations_solution_id_unique";
