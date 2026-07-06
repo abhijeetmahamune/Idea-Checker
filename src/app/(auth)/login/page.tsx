@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { loginAction } from '@/app/auth-actions';
+import { loginAction, guestLoginAction } from '@/app/auth-actions';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,19 @@ import { Lightbulb, Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const handleGuestLogin = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await guestLoginAction();
+      if (result?.error) {
+        setError(result.error);
+        toast.error(result.error);
+      } else {
+        toast.success('Successfully logged in as guest!');
+      }
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -100,6 +113,23 @@ export default function LoginPage() {
                 'Login'
               )}
             </Button>
+
+            <div className="relative flex py-1 items-center w-full">
+              <div className="flex-grow border-t border-zinc-800"></div>
+              <span className="flex-shrink mx-4 text-zinc-500 text-xs uppercase">Or</span>
+              <div className="flex-grow border-t border-zinc-800"></div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              onClick={handleGuestLogin}
+              className="w-full border-zinc-800 hover:bg-zinc-900 text-zinc-300 hover:text-white transition-all duration-200"
+            >
+              Continue as Guest
+            </Button>
+
             <div className="text-sm text-center text-zinc-500">
               Don&apos;t have an account?{' '}
               <Link href="/register" className="text-violet-400 hover:underline">

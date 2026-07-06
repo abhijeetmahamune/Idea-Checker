@@ -9,6 +9,24 @@ export async function signOut() {
   redirect('/');
 }
 
+export async function guestLoginAction() {
+  const email = 'abhijeetmahamune777@gmail.com';
+  const password = 'abhijeetmahamune777@gmail.com';
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect('/dashboard');
+}
+
+
 export async function loginAction(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
