@@ -23,9 +23,11 @@ export const problems = pgTable('problems', {
 export const solutions = pgTable('solutions', {
   id: uuid('id').defaultRandom().primaryKey(),
   problemId: uuid('problem_id').references(() => problems.id, { onDelete: 'cascade' }).notNull(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }), // Proposer (can be different from problem owner)
-  guestSessionId: uuid('guest_session_id'), // Guest proposer ID
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  guestSessionId: uuid('guest_session_id'),
   content: text('content').notNull(),
+  isMerged: boolean('is_merged').default(false).notNull(),
+  mergedFromIds: text('merged_from_ids').array(), // uuid[] stored as text[]
   deepReport: jsonb('deep_report').$type<{
     executiveSummary: string;
     problemValidation: { score: number; analysis: string };
@@ -122,3 +124,44 @@ export const solutionRatings = pgTable(
   },
   (table) => [unique('solution_ratings_unique').on(table.solutionId, table.userId)]
 );
+
+// ── Community Comments (on public problems) ───────────────────────────────────
+export const problemComments = pgTable('problem_comments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  problemId: uuid('problem_id').references(() => problems.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ── Collaboration Workspaces ──────────────────────────────────────────────────
+export const workspaces = pgTable('workspaces', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  problemId: uuid('problem_id').references(() => problems.id, { onDelete: 'cascade' }).notNull(),
+  ownerId: uuid('owner_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  inviteCode: text('invite_code').unique().notNull(), // 8-char random code
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const workspaceMembers = pgTable(
+  'workspace_members',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    workspaceId: uuid('workspace_id').references(() => workspaces.id, { onDelete: 'cascade' }).notNull(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    role: text('role').notNull().default('viewer'), // 'owner' | 'editor' | 'viewer'
+    joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique('workspace_members_unique').on(table.workspaceId, table.userId)]
+);
+
+export const workspaceMessages = pgTable('workspace_messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').references(() => workspaces.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  senderName: text('sender_name').notNull().default('Unknown'), // denormalized for realtime
+  content: text('content').notNull(),
+  type: text('type').notNull().default('text'), // 'text' | 'ai' | 'system'
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
