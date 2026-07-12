@@ -44,8 +44,8 @@ export async function generatePivots(
   currentScore: number,
   domain?: string
 ): Promise<PivotSuggestion[]> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is missing');
+  const apiKey = process.env.MESH_API_KEY;
+  if (!apiKey) throw new Error('MESH_API_KEY is missing');
 
   const domainContext = domain && DOMAIN_SYSTEM_HINTS[domain]
     ? `\nDomain Context: ${DOMAIN_SYSTEM_HINTS[domain]}`
@@ -73,16 +73,14 @@ Respond with a raw JSON object (no markdown, no explanations):
   ]
 }`;
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://idea-checker.vercel.app',
-      'X-Title': 'Idea Checker',
     },
     body: JSON.stringify({
-      model: 'nvidia/nemotron-3-super-120b-a12b:free',
+      model: 'meta-llama/llama-3.3-70b-instruct',
       response_format: { type: 'json_object' },
       messages: [
         { role: 'user', content: prompt },
@@ -91,7 +89,7 @@ Respond with a raw JSON object (no markdown, no explanations):
   });
 
   if (!response.ok) {
-    throw new Error(`Nemetron HTTP error: ${response.status}`);
+    throw new Error(`Mesh API HTTP error: ${response.status}`);
   }
 
   const data = await response.json();

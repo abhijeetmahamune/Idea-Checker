@@ -37,9 +37,9 @@ export async function runStressSimulation(
   solution: string,
   scenario: string
 ): Promise<SimulationResponse> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.MESH_API_KEY;
   if (!apiKey) {
-    throw new Error('OPENROUTER_API_KEY is missing from environment variables');
+    throw new Error('MESH_API_KEY is missing from environment variables');
   }
 
   const prompt = `
@@ -55,16 +55,14 @@ export async function runStressSimulation(
   Please analyze the solution under this scenario.
   `;
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://idea-checker.vercel.app',
-      'X-Title': 'Idea Checker',
     },
     body: JSON.stringify({
-      model: 'nvidia/nemotron-3-super-120b-a12b:free',
+      model: 'meta-llama/llama-3.3-70b-instruct',
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: getSimulationSystemPrompt() },
@@ -74,13 +72,13 @@ export async function runStressSimulation(
   });
 
   if (!response.ok) {
-    throw new Error(`Nemetron HTTP error: ${response.status}`);
+    throw new Error(`Mesh API HTTP error: ${response.status}`);
   }
 
   const data = await response.json();
   const responseText = data?.choices?.[0]?.message?.content;
   if (!responseText) {
-    throw new Error('Empty message content returned from Nemetron');
+    throw new Error('Empty message content returned from Mesh API');
   }
 
   // Clean markdown wrappers if any leaked

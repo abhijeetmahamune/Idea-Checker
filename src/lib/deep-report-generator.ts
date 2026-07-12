@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { db } from '@/db';
+import { aiRequests } from '@/db/schema';
 
 // Type-safe schema for the 10-section deep report
 export const deepReportSchema = z.object({
@@ -49,32 +51,57 @@ export const deepReportSchema = z.object({
 
 export type DeepReport = z.infer<typeof deepReportSchema>;
 
-// Try these Nemetron/OpenRouter models in order until one works
+// Try these Mesh API models in order until one works
 const MODELS = [
-  'nvidia/nemotron-3-super-120b-a12b:free',
-  'nvidia/nemotron-3-ultra-550b-a55b:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
+  'meta-llama/llama-3.3-70b-instruct',
+  'google/gemini-flash-1.5',
+  'anthropic/claude-3-haiku',
 ];
+
+function estimateCost(model: string, promptTokens: number, completionTokens: number): number {
+  let inputRate = 0.0;
+  let outputRate = 0.0;
+  if (model.includes('llama-3.3-70b')) {
+    inputRate = 0.70;
+    outputRate = 0.90;
+  } else if (model.includes('gemini-flash')) {
+    inputRate = 0.075;
+    outputRate = 0.30;
+  } else if (model.includes('claude-haiku') || model.includes('claude-3-haiku')) {
+    inputRate = 0.25;
+    outputRate = 1.25;
+  }
+  return (promptTokens * inputRate + completionTokens * outputRate) / 1_000_000;
+}
+
+export interface DeepReportResult {
+  report: DeepReport;
+  modelUsed: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  estimatedCost: string;
+  generationTimeMs: number;
+}
 
 export async function generateDeepReport(
   problem: string,
   solution: string,
   domain?: string
-): Promise<DeepReport> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured');
+): Promise<DeepReportResult> {
+  const apiKey = process.env.MESH_API_KEY;
+  if (!apiKey) throw new Error('MESH_API_KEY is not configured');
 
   const prompt = buildPrompt(problem, solution, domain);
 
   for (const modelName of MODELS) {
+    const startTime = Date.now();
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://idea-checker.vercel.app',
-          'X-Title': 'Idea Checker',
         },
         body: JSON.stringify({
           model: modelName,
@@ -84,6 +111,8 @@ export async function generateDeepReport(
           ],
         }),
       });
+
+      const latencyMs = Date.now() - startTime;
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
@@ -99,9 +128,58 @@ export async function generateDeepReport(
         : text;
 
       const parsed = JSON.parse(cleaned);
-      return deepReportSchema.parse(parsed);
+      const report = deepReportSchema.parse(parsed);
+
+      const usage = data?.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+      const promptTokens = usage.prompt_tokens || 0;
+      const completionTokens = usage.completion_tokens || 0;
+      const totalTokens = usage.total_tokens || 0;
+      const cost = estimateCost(modelName, promptTokens, completionTokens);
+
+      // Log request
+      try {
+        await db.insert(aiRequests).values({
+          endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+          model: modelName,
+          promptVersion: 'deep-report-v1',
+          latency: latencyMs,
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          estimatedCost: cost.toFixed(6),
+          success: true,
+        });
+      } catch (logErr) {
+        console.error('Failed to log AI request:', logErr);
+      }
+
+      return {
+        report,
+        modelUsed: modelName,
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        estimatedCost: cost.toFixed(6),
+        generationTimeMs: latencyMs,
+      };
     } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
       console.warn(`Deep report model ${modelName} failed:`, err?.message);
+
+      // Log failure
+      try {
+        await db.insert(aiRequests).values({
+          endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+          model: modelName,
+          promptVersion: 'deep-report-v1',
+          latency: latencyMs,
+          success: false,
+          errorMessage: err.message || String(err),
+        });
+      } catch (logErr) {
+        console.error('Failed to log AI request:', logErr);
+      }
+
       continue;
     }
   }

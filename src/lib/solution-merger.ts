@@ -2,23 +2,21 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 
-const OPENROUTER_MODELS = [
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
-  'google/gemini-2.5-flash:free',
+const MESH_MODELS = [
+  'meta-llama/llama-3.3-70b-instruct',
+  'google/gemini-flash-1.5',
+  'anthropic/claude-3-haiku',
 ];
 
-async function runOpenRouterMerge(prompt: string, modelName: string): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured');
+async function runMeshMerge(prompt: string, modelName: string): Promise<string> {
+  const apiKey = process.env.MESH_API_KEY;
+  if (!apiKey) throw new Error('MESH_API_KEY is not configured');
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://idea-checker.vercel.app',
-      'X-Title': 'Idea Checker',
     },
     body: JSON.stringify({
       model: modelName,
@@ -29,12 +27,12 @@ async function runOpenRouterMerge(prompt: string, modelName: string): Promise<st
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouter HTTP error: ${response.status}`);
+    throw new Error(`Mesh API HTTP error: ${response.status}`);
   }
 
   const data = await response.json();
   const text = data?.choices?.[0]?.message?.content?.trim();
-  if (!text) throw new Error('Empty response from OpenRouter model');
+  if (!text) throw new Error('Empty response from Mesh API model');
   return text;
 }
 
@@ -86,19 +84,19 @@ Write only the merged solution text, no preamble or explanation:`;
     console.warn('GEMINI_API_KEY is not configured. Skipping Gemini models.');
   }
 
-  // Fallback to OpenRouter
-  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-  if (openRouterApiKey) {
-    for (const modelName of OPENROUTER_MODELS) {
+  // Fallback to Mesh API
+  const meshApiKey = process.env.MESH_API_KEY;
+  if (meshApiKey) {
+    for (const modelName of MESH_MODELS) {
       try {
-        const text = await runOpenRouterMerge(prompt, modelName);
+        const text = await runMeshMerge(prompt, modelName);
         if (text.length > 50) return text;
       } catch (err: any) {
-        console.warn(`OpenRouter merge model ${modelName} failed:`, err?.message);
+        console.warn(`Mesh API merge model ${modelName} failed:`, err?.message);
       }
     }
   } else {
-    console.warn('OPENROUTER_API_KEY is not configured. Skipping OpenRouter fallback.');
+    console.warn('MESH_API_KEY is not configured. Skipping Mesh API fallback.');
   }
 
   throw new Error('All AI models failed to merge solutions. Please try again.');

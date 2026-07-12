@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { db } from '@/db';
+import { aiRequests } from '@/db/schema';
 
 // Schema validation for individual model responses
 export const evaluationResponseSchema = z.object({
@@ -28,7 +30,28 @@ export interface EvaluationResult {
   };
   successfulModels: string[];
   failedModels: string[];
+  rawResponses: Array<{
+    model: string;
+    response: EvaluationResponse;
+    promptTokens: number;
+    completionTokens: number;
+    latencyMs: number;
+  }>;
+  consensusResult: {
+    modelsCount: number;
+    feasibilityAvg: number;
+    effectivenessAvg: number;
+    scalabilityAvg: number;
+    costEfficiencyAvg: number;
+    innovationAvg: number;
+  };
+  generationTimeMs: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  estimatedCost: string;
 }
+
 
 // Per-domain extra evaluation instructions injected into the system prompt
 const DOMAIN_HINTS: Record<string, string> = {
@@ -92,71 +115,157 @@ function parseAndCleanJson(text: string): EvaluationResponse {
   return evaluationResponseSchema.parse(parsed);
 }
 
-// Directly query Nvidia Nemetron via OpenRouter as a backup/fallback
-async function runNemetronFallback(problem: string, solution: string, domain?: string): Promise<EvaluationResponse> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENROUTER_API_KEY is missing from environment variables');
+// Estimate Mesh API cost based on standard model pricing rates (per 1M tokens)
+function estimateMeshCost(model: string, promptTokens: number, completionTokens: number): number {
+  let inputRate = 0.0;
+  let outputRate = 0.0;
+
+  if (model.includes('llama-3.3-70b')) {
+    inputRate = 0.70; // $0.70 per 1M tokens
+    outputRate = 0.90; // $0.90 per 1M tokens
+  } else if (model.includes('gemini-flash')) {
+    inputRate = 0.075;
+    outputRate = 0.30;
+  } else if (model.includes('claude-haiku') || model.includes('claude-3-haiku')) {
+    inputRate = 0.25;
+    outputRate = 1.25;
+  } else if (model.includes('nemotron')) {
+    inputRate = 0.50;
+    outputRate = 0.50;
+  } else if (model.includes('gpt-oss-120b')) {
+    inputRate = 1.00;
+    outputRate = 1.00;
   }
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://idea-checker.vercel.app',
-      'X-Title': 'Idea Checker',
-    },
-    body: JSON.stringify({
-      model: 'nvidia/nemotron-3-super-120b-a12b:free',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: getSystemPrompt(domain) },
-        { role: 'user', content: `Problem:\n${problem}\n\nSolution:\n${solution}` },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Nemetron fallback HTTP error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) {
-    throw new Error('Empty message content returned from Nemetron fallback');
-  }
-
-  return parseAndCleanJson(content);
+  return (promptTokens * inputRate + completionTokens * outputRate) / 1_000_000;
 }
 
-// Query an OpenRouter model with a timeout and retry logic
+export interface ModelCallResult {
+  evaluation: EvaluationResponse;
+  modelId: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  cost: number;
+  latencyMs: number;
+}
+
+// Directly query a fallback model via Mesh API
+async function runNemetronFallback(problem: string, solution: string, domain?: string): Promise<ModelCallResult> {
+  const apiKey = process.env.MESH_API_KEY;
+  if (!apiKey) {
+    throw new Error('MESH_API_KEY is missing from environment variables');
+  }
+
+  const modelId = 'meta-llama/llama-3.3-70b-instruct';
+  const startTime = Date.now();
+
+  try {
+    const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: modelId,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: getSystemPrompt(domain) },
+          { role: 'user', content: `Problem:\n${problem}\n\nSolution:\n${solution}` },
+        ],
+      }),
+    });
+
+    const latencyMs = Date.now() - startTime;
+
+    if (!response.ok) {
+      throw new Error(`Mesh API fallback HTTP error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('Empty message content returned from Mesh API fallback');
+    }
+
+    const usage = data?.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const totalTokens = usage.total_tokens || 0;
+    const cost = estimateMeshCost(modelId, promptTokens, completionTokens);
+
+    // Log request
+    try {
+      await db.insert(aiRequests).values({
+        endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+        model: modelId,
+        promptVersion: 'evaluator-v1',
+        latency: latencyMs,
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        estimatedCost: cost.toFixed(6),
+        success: true,
+      });
+    } catch (logErr) {
+      console.error('Failed to log AI request:', logErr);
+    }
+
+    return {
+      evaluation: parseAndCleanJson(content),
+      modelId,
+      promptTokens,
+      completionTokens,
+      totalTokens,
+      cost,
+      latencyMs,
+    };
+  } catch (err: any) {
+    const latencyMs = Date.now() - startTime;
+    // Log failure
+    try {
+      await db.insert(aiRequests).values({
+        endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+        model: modelId,
+        promptVersion: 'evaluator-v1',
+        latency: latencyMs,
+        success: false,
+        errorMessage: err.message || String(err),
+      });
+    } catch (logErr) {
+      console.error('Failed to log AI request:', logErr);
+    }
+    throw err;
+  }
+}
+
+// Query a Mesh API model with a timeout and retry logic
 async function runOpenRouterModel(
   modelId: string,
   problem: string,
   solution: string,
   domain?: string
-): Promise<EvaluationResponse> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+): Promise<ModelCallResult> {
+  const apiKey = process.env.MESH_API_KEY;
   if (!apiKey) {
-    throw new Error('OPENROUTER_API_KEY is missing from environment variables');
+    throw new Error('MESH_API_KEY is missing from environment variables');
   }
 
   const maxRetries = 2;
   let delay = 1500;
+  const startTime = Date.now();
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
 
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://idea-checker.vercel.app', // Site URL
-          'X-Title': 'Idea Checker',
         },
         body: JSON.stringify({
           model: modelId,
@@ -169,6 +278,8 @@ async function runOpenRouterModel(
         signal: controller.signal,
       });
 
+      const latencyMs = Date.now() - startTime;
+
       if (response.status === 429) {
         if (attempt < maxRetries) {
           console.warn(`Model ${modelId} rate limited (429). Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries + 1})`);
@@ -180,23 +291,69 @@ async function runOpenRouterModel(
       }
 
       if (!response.ok) {
-        throw new Error(`OpenRouter HTTP error: ${response.status}`);
+        throw new Error(`Mesh API HTTP error: ${response.status}`);
       }
 
       const data = await response.json();
       const content = data?.choices?.[0]?.message?.content;
       if (!content) {
-        throw new Error('Empty message content returned from OpenRouter');
+        throw new Error('Empty message content returned from Mesh API');
       }
 
-      return parseAndCleanJson(content);
+      const usage = data?.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+      const promptTokens = usage.prompt_tokens || 0;
+      const completionTokens = usage.completion_tokens || 0;
+      const totalTokens = usage.total_tokens || 0;
+      const cost = estimateMeshCost(modelId, promptTokens, completionTokens);
+
+      // Log request
+      try {
+        await db.insert(aiRequests).values({
+          endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+          model: modelId,
+          promptVersion: 'evaluator-v1',
+          latency: latencyMs,
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          estimatedCost: cost.toFixed(6),
+          success: true,
+        });
+      } catch (logErr) {
+        console.error('Failed to log AI request:', logErr);
+      }
+
+      return {
+        evaluation: parseAndCleanJson(content),
+        modelId,
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        cost,
+        latencyMs,
+      };
     } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
       if (attempt < maxRetries) {
         console.warn(`Model ${modelId} failed (attempt ${attempt + 1}/${maxRetries + 1}). Error: ${err.message || err}. Retrying in ${delay}ms...`);
         clearTimeout(timeoutId);
         await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 2;
         continue;
+      }
+      
+      // Log failure
+      try {
+        await db.insert(aiRequests).values({
+          endpoint: 'https://api.meshapi.ai/v1/chat/completions',
+          model: modelId,
+          promptVersion: 'evaluator-v1',
+          latency: latencyMs,
+          success: false,
+          errorMessage: err.message || String(err),
+        });
+      } catch (logErr) {
+        console.error('Failed to log AI request:', logErr);
       }
       throw err;
     } finally {
@@ -212,17 +369,20 @@ export async function evaluateSolution(
   solution: string,
   domain?: string
 ): Promise<EvaluationResult> {
+  // Main evaluation orchestrator running 3 models in parallel via Mesh API, with fallback
   const models = [
-    { name: 'Llama 3.3 70B (OpenRouter)', id: 'meta-llama/llama-3.3-70b-instruct:free' },
-    { name: 'GPT OSS 120B (OpenRouter)', id: 'openai/gpt-oss-120b:free' },
-    { name: 'Nemotron 3 120B (OpenRouter)', id: 'nvidia/nemotron-3-super-120b-a12b:free' },
+    { name: 'Llama 3.3 70B (Mesh)', id: 'meta-llama/llama-3.3-70b-instruct' },
+    { name: 'Gemini 1.5 Flash (Mesh)', id: 'google/gemini-flash-1.5' },
+    { name: 'Claude 3 Haiku (Mesh)', id: 'anthropic/claude-3-haiku' },
   ];
 
   const successfulModels: string[] = [];
   const failedModels: string[] = [];
   const parsedEvaluations: EvaluationResponse[] = [];
-
-  // Run all three OpenRouter evaluations concurrently
+  
+  const startTime = Date.now();
+  
+  // Mesh API concurrent calls
   const openRouterPromises = models.map((m) =>
     runOpenRouterModel(m.id, problem, solution, domain)
       .then((res) => ({ model: m.name, response: res, success: true as const }))
@@ -231,19 +391,47 @@ export async function evaluateSolution(
 
   const results = await Promise.all(openRouterPromises);
 
+  const rawResponses: any[] = [];
+  let totalPromptTokens = 0;
+  let totalCompletionTokens = 0;
+  let totalTotalTokens = 0;
+  let totalCost = 0;
+
   // Process results and run fallback for failed models
   for (const res of results) {
     if (res.success) {
-      parsedEvaluations.push(res.response);
-      successfulModels.push(res.model);
+      parsedEvaluations.push(res.response.evaluation);
+      successfulModels.push(res.response.modelId);
+      rawResponses.push({
+        model: res.response.modelId,
+        response: res.response.evaluation,
+        promptTokens: res.response.promptTokens,
+        completionTokens: res.response.completionTokens,
+        latencyMs: res.response.latencyMs,
+      });
+      totalPromptTokens += res.response.promptTokens;
+      totalCompletionTokens += res.response.completionTokens;
+      totalTotalTokens += res.response.totalTokens;
+      totalCost += res.response.cost;
     } else {
       console.warn(`Model ${res.model} failed. Error:`, res.error?.message || res.error);
       // Attempt Nemetron API fallback for this specific failed slot
       try {
         console.log(`Running Nemetron fallback for failed slot: ${res.model}`);
         const nemetronResponse = await runNemetronFallback(problem, solution, domain);
-        parsedEvaluations.push(nemetronResponse);
+        parsedEvaluations.push(nemetronResponse.evaluation);
         successfulModels.push(`${res.model} -> Nemetron Fallback`);
+        rawResponses.push({
+          model: `${res.model} -> Nemetron Fallback`,
+          response: nemetronResponse.evaluation,
+          promptTokens: nemetronResponse.promptTokens,
+          completionTokens: nemetronResponse.completionTokens,
+          latencyMs: nemetronResponse.latencyMs,
+        });
+        totalPromptTokens += nemetronResponse.promptTokens;
+        totalCompletionTokens += nemetronResponse.completionTokens;
+        totalTotalTokens += nemetronResponse.totalTokens;
+        totalCost += nemetronResponse.cost;
       } catch (fallbackError: any) {
         console.error(`Nemetron fallback also failed for ${res.model}:`, fallbackError?.message || fallbackError);
         failedModels.push(res.model);
@@ -315,5 +503,21 @@ export async function evaluateSolution(
     },
     successfulModels,
     failedModels,
+    
+    // New metrics & audit data
+    rawResponses,
+    consensusResult: {
+      modelsCount: count,
+      feasibilityAvg,
+      effectivenessAvg,
+      scalabilityAvg,
+      costEfficiencyAvg,
+      innovationAvg,
+    },
+    generationTimeMs: Date.now() - startTime,
+    promptTokens: totalPromptTokens,
+    completionTokens: totalCompletionTokens,
+    totalTokens: totalTotalTokens,
+    estimatedCost: totalCost.toFixed(6),
   };
 }

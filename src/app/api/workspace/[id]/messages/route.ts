@@ -114,7 +114,7 @@ Provide a concise, helpful response (2-4 sentences max). Be specific to this pro
 
             let aiResponse: string | null = null;
             const geminiApiKey = process.env.GEMINI_API_KEY;
-            const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+            const meshApiKey = process.env.MESH_API_KEY;
 
             // 1. Try Gemini
             if (geminiApiKey) {
@@ -128,23 +128,21 @@ Provide a concise, helpful response (2-4 sentences max). Be specific to this pro
               }
             }
 
-            // 2. Try OpenRouter Fallback
-            if (!aiResponse && openRouterApiKey) {
-              const openRouterModels = [
-                'meta-llama/llama-3.3-70b-instruct:free',
-                'nvidia/nemotron-3-super-120b-a12b:free',
-                'google/gemini-2.5-flash:free',
+            // 2. Try Mesh API Fallback
+            if (!aiResponse && meshApiKey) {
+              const meshModels = [
+                'meta-llama/llama-3.3-70b-instruct',
+                'google/gemini-flash-1.5',
+                'anthropic/claude-3-haiku',
               ];
 
-              for (const modelName of openRouterModels) {
+              for (const modelName of meshModels) {
                 try {
-                  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                  const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      Authorization: `Bearer ${openRouterApiKey}`,
-                      'HTTP-Referer': 'https://idea-checker.vercel.app',
-                      'X-Title': 'Idea Checker',
+                      Authorization: `Bearer ${meshApiKey}`,
                     },
                     body: JSON.stringify({
                       model: modelName,
@@ -160,10 +158,10 @@ Provide a concise, helpful response (2-4 sentences max). Be specific to this pro
                       break;
                     }
                   } else {
-                    console.warn(`OpenRouter model ${modelName} returned status ${response.status}`);
+                    console.warn(`Mesh API model ${modelName} returned status ${response.status}`);
                   }
                 } catch (err: any) {
-                  console.warn(`OpenRouter model ${modelName} call failed:`, err?.message);
+                  console.warn(`Mesh API model ${modelName} call failed:`, err?.message);
                 }
               }
             }

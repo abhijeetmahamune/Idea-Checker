@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DOMAIN_SYSTEM_HINTS } from '@/lib/solution-generator';
 
-// Try these OpenRouter models in order until one works
+// Try these Mesh API models in order until one works
 const MODELS_TO_TRY = [
-  'nvidia/nemotron-3-super-120b-a12b:free',
-  'nvidia/nemotron-3-ultra-550b-a55b:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
+  'meta-llama/llama-3.3-70b-instruct',
+  'google/gemini-flash-1.5',
+  'anthropic/claude-3-haiku',
 ];
 
 export async function POST(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.MESH_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: 'AI service is not configured.' },
@@ -37,16 +37,14 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join('\n\n');
 
-    // Try streaming via OpenRouter SSE
+    // Try streaming via Mesh API SSE
     for (const modelName of MODELS_TO_TRY) {
       try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://idea-checker.vercel.app',
-            'X-Title': 'Idea Checker',
           },
           body: JSON.stringify({
             model: modelName,
@@ -62,7 +60,7 @@ export async function POST(request: NextRequest) {
           throw new Error(`HTTP error: ${response.status}`);
         }
 
-        // Pipe OpenRouter SSE stream → extract text deltas → forward as plain text stream
+        // Pipe Mesh API SSE stream → extract text deltas → forward as plain text stream
         const stream = new ReadableStream({
           async start(controller) {
             const encoder = new TextEncoder();
@@ -122,13 +120,11 @@ export async function POST(request: NextRequest) {
     // All streaming attempts failed — try plain non-streaming calls as last resort
     for (const modelName of MODELS_TO_TRY) {
       try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://idea-checker.vercel.app',
-            'X-Title': 'Idea Checker',
           },
           body: JSON.stringify({
             model: modelName,
