@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/server';
 import { evaluateSolution } from '@/lib/evaluator';
 import { generatePivots } from '@/lib/solution-generator';
 import { z } from 'zod';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and, isNull, desc } from 'drizzle-orm';
+import crypto from 'crypto';
 
 // Validation schema for request body
 const evaluateRequestSchema = z.object({
@@ -16,6 +17,7 @@ const evaluateRequestSchema = z.object({
   tags: z.array(z.string()).optional(),
   problemId: z.string().uuid().optional(), // If proposing a solution to an existing problem
   domain: z.string().optional(),           // Optional domain hint for tailored evaluation
+  force: z.boolean().optional(),
 }).superRefine((data, ctx) => {
   if (!data.problemId) {
     if (!data.problemTitle || data.problemTitle.length < 5) {
@@ -140,49 +142,130 @@ export async function POST(request: NextRequest) {
 
     const activeSolutionId = newSolution[0].id;
 
-    // Run AI Evaluation (with optional domain context)
-    const evaluationData = await evaluateSolution(
-      problemDesc,
-      validatedData.solutionContent,
-      validatedData.domain
-    );
+    function computeHash(problem: string, solution: string): string {
+      return crypto.createHash('sha256').update(`${problem || ''}||${solution || ''}`).digest('hex');
+    }
 
-    // Auto-generate pivot suggestions if score is below 60
+    const hash = computeHash(problemDesc, validatedData.solutionContent);
+
+    // 1. Caching check (unless force is true)
+    let evaluationData;
     let pivotSuggestions = null;
-    if (evaluationData.overallScore < 60) {
-      try {
-        pivotSuggestions = await generatePivots(
-          problemDesc,
-          validatedData.solutionContent,
-          evaluationData.overallScore,
-          validatedData.domain
-        );
-      } catch (pivotErr) {
-        console.warn('Pivot generation failed (non-fatal):', pivotErr);
+    let cacheHit = false;
+
+    if (!validatedData.force) {
+      const cached = await db
+        .select()
+        .from(evaluations)
+        .where(eq(evaluations.contentHash, hash))
+        .orderBy(desc(evaluations.createdAt))
+        .limit(1);
+
+      if (cached.length > 0) {
+        console.log(`[Cache Hit] Reusing evaluation for solution ${activeSolutionId}`);
+        cacheHit = true;
+        
+        evaluationData = {
+          feasibility: cached[0].feasibility,
+          effectiveness: cached[0].effectiveness,
+          scalability: cached[0].scalability,
+          costEfficiency: cached[0].costEfficiency,
+          innovation: cached[0].innovation,
+          overallScore: cached[0].overallScore,
+          feedback: cached[0].feedback,
+          successfulModels: cached[0].successfulModels,
+          failedModels: cached[0].failedModels,
+        };
+
+        pivotSuggestions = cached[0].pivotSuggestions;
+
+        // Save cloned evaluation record
+        await db.insert(evaluations).values({
+          solutionId: activeSolutionId,
+          feasibility: cached[0].feasibility,
+          effectiveness: cached[0].effectiveness,
+          scalability: cached[0].scalability,
+          costEfficiency: cached[0].costEfficiency,
+          innovation: cached[0].innovation,
+          overallScore: cached[0].overallScore,
+          domain: validatedData.domain ?? null,
+          feedback: cached[0].feedback,
+          pivotSuggestions,
+          successfulModels: cached[0].successfulModels,
+          failedModels: cached[0].failedModels,
+          
+          rawResponses: cached[0].rawResponses,
+          consensusResult: cached[0].consensusResult,
+          modelUsed: cached[0].modelUsed,
+          promptVersion: cached[0].promptVersion,
+          generationTimeMs: cached[0].generationTimeMs,
+          promptTokens: cached[0].promptTokens,
+          completionTokens: cached[0].completionTokens,
+          totalTokens: cached[0].totalTokens,
+          estimatedCost: cached[0].estimatedCost,
+          contentHash: hash,
+        });
       }
     }
 
-    // Save evaluation in database
-    await db.insert(evaluations).values({
-      solutionId: activeSolutionId,
-      feasibility: evaluationData.feasibility,
-      effectiveness: evaluationData.effectiveness,
-      scalability: evaluationData.scalability,
-      costEfficiency: evaluationData.costEfficiency,
-      innovation: evaluationData.innovation,
-      overallScore: evaluationData.overallScore,
-      domain: validatedData.domain ?? null,
-      feedback: evaluationData.feedback,
-      pivotSuggestions,
-      successfulModels: evaluationData.successfulModels,
-      failedModels: evaluationData.failedModels,
-    });
+    if (!cacheHit) {
+      // Run AI Evaluation (with optional domain context)
+      const freshEval = await evaluateSolution(
+        problemDesc,
+        validatedData.solutionContent,
+        validatedData.domain
+      );
+
+      evaluationData = freshEval;
+
+      // Auto-generate pivot suggestions if score is below 60
+      if (freshEval.overallScore < 60) {
+        try {
+          pivotSuggestions = await generatePivots(
+            problemDesc,
+            validatedData.solutionContent,
+            freshEval.overallScore,
+            validatedData.domain
+          );
+        } catch (pivotErr) {
+          console.warn('Pivot generation failed (non-fatal):', pivotErr);
+        }
+      }
+
+      // Save evaluation in database
+      await db.insert(evaluations).values({
+        solutionId: activeSolutionId,
+        feasibility: freshEval.feasibility,
+        effectiveness: freshEval.effectiveness,
+        scalability: freshEval.scalability,
+        costEfficiency: freshEval.costEfficiency,
+        innovation: freshEval.innovation,
+        overallScore: freshEval.overallScore,
+        domain: validatedData.domain ?? null,
+        feedback: freshEval.feedback,
+        pivotSuggestions,
+        successfulModels: freshEval.successfulModels,
+        failedModels: freshEval.failedModels,
+        
+        rawResponses: freshEval.rawResponses,
+        consensusResult: freshEval.consensusResult,
+        modelUsed: 'consensus-ensemble',
+        promptVersion: 'evaluator-v1',
+        generationTimeMs: freshEval.generationTimeMs,
+        promptTokens: freshEval.promptTokens,
+        completionTokens: freshEval.completionTokens,
+        totalTokens: freshEval.totalTokens,
+        estimatedCost: freshEval.estimatedCost,
+        contentHash: hash,
+      });
+    }
 
     return NextResponse.json({
       success: true,
       problemId: activeProblemId,
       solutionId: activeSolutionId,
       evaluation: evaluationData,
+      cached: cacheHit,
     });
   } catch (error: any) {
     console.error('API evaluation route error:', error);

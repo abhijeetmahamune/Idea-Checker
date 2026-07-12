@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { solutions, problems, evaluations, simulations, devilAdvocateReports, solutionRatings } from '@/db/schema';
+import { solutions, problems, evaluations, simulations, devilAdvocateReports, solutionRatings, deepReports } from '@/db/schema';
 import { eq, sql, desc, and, avg } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -103,7 +103,16 @@ export default async function SolutionEvaluationPage({
   };
 
   const defaultTab = tab || 'score';
-  const deepReport = solution.deepReport ?? null;
+  
+  // Fetch latest completed deep report from the dedicated deep_reports table
+  const deepReportsResult = await db
+    .select()
+    .from(deepReports)
+    .where(and(eq(deepReports.solutionId, solutionId), eq(deepReports.status, 'COMPLETED')))
+    .orderBy(desc(deepReports.createdAt))
+    .limit(1);
+
+  const deepReport = deepReportsResult[0]?.content ?? null;
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">

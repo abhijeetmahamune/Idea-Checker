@@ -50,6 +50,13 @@
       "when": 1783421244388,
       "tag": "0006_gray_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783497483798,
+      "tag": "0007_small_vanisher",
+      "breakpoints": true
     }
   ]
 }
