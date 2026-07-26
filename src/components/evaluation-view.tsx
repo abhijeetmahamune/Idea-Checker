@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle2, Lightbulb, DollarSign,
@@ -8,6 +7,10 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PivotSuggestions } from '@/components/pivot-suggestions';
+import { ExpandableText } from '@/components/expandable-text';
+import { AnimatedDimBar, type DimIconName } from '@/components/animated-score';
+import { PentagonRadarChart } from '@/components/pentagon-radar-chart';
+import { ScoreCoachingCard } from '@/components/score-coaching-card';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -86,217 +89,6 @@ const DIMENSION_LABELS: Record<typeof DIMENSION_KEYS[number], string> = {
   innovation: 'Innovation',
 };
 
-// ── Pentagon Radar Chart ──────────────────────────────────────────────────────
-
-interface PentagonProps {
-  feasibility: number;
-  effectiveness: number;
-  scalability: number;
-  costEfficiency: number;
-  innovation: number;
-  overallScore: number;
-}
-
-function PentagonRadarChart({ feasibility, effectiveness, scalability, costEfficiency, innovation, overallScore }: PentagonProps) {
-  // Geometry constants
-  const cx = 150;   // center X
-  const cy = 135;   // center Y (slightly above middle for label room at bottom)
-  const maxR = 80;  // outer pentagon radius
-  const labelR = maxR + 24; // label orbit radius
-
-  const dims = [
-    { label: 'Feasibility',  shortLabel: 'Feasibility',  score: feasibility },
-    { label: 'Effectiveness',shortLabel: 'Effectiveness', score: effectiveness },
-    { label: 'Scalability',  shortLabel: 'Scalability',   score: scalability },
-    { label: 'Cost Eff.',    shortLabel: 'Cost Eff.',     score: costEfficiency },
-    { label: 'Innovation',   shortLabel: 'Innovation',    score: innovation },
-  ];
-
-  const n = 5;
-  const step = (2 * Math.PI) / n;
-  const startAngle = -Math.PI / 2; // top = 12 o'clock
-
-  /** Cartesian point on circle of radius r at index i */
-  const pt = (i: number, r: number) => ({
-    x: cx + r * Math.cos(startAngle + i * step),
-    y: cy + r * Math.sin(startAngle + i * step),
-  });
-
-  /** SVG polygon points string for a grid ring */
-  const ringPts = (fraction: number) =>
-    Array.from({ length: n }, (_, i) => {
-      const p = pt(i, fraction * maxR);
-      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-    }).join(' ');
-
-  /** Data polygon points based on actual scores */
-  const dataPts = dims
-    .map((d, i) => {
-      const p = pt(i, (d.score / 10) * maxR);
-      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-    })
-    .join(' ');
-
-  const color = overallScore >= 80 ? '#10b981' : overallScore >= 60 ? '#f59e0b' : '#f43f5e';
-  const colorFill = overallScore >= 80 ? '#10b98122' : overallScore >= 60 ? '#f59e0b22' : '#f43f5e22';
-  const centerLabel = overallScore >= 80 ? 'Promising' : overallScore >= 60 ? 'Viable' : 'At Risk';
-
-  // Grid level labels (2, 4, 6, 8, 10)
-  const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
-  // Put level numbers on the right axis (index 1 = top-right direction)
-  const labelAxis = 1;
-
-  return (
-    <svg
-      viewBox="0 0 300 280"
-      className="w-full h-full"
-      style={{ overflow: 'visible' }}
-      aria-label="Pentagon radar chart showing 5 evaluation dimensions"
-    >
-      {/* ── Grid rings ── */}
-      {gridLevels.map((f, i) => (
-        <polygon
-          key={i}
-          points={ringPts(f)}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity={f === 1.0 ? 0.30 : 0.13}
-          strokeWidth={f === 1.0 ? 1.5 : 0.75}
-          className="text-muted-foreground"
-        />
-      ))}
-
-      {/* ── Grid level numbers on right-axis ── */}
-      {gridLevels.map((f, i) => {
-        const p = pt(labelAxis, f * maxR);
-        return (
-          <text
-            key={i}
-            x={(p.x + 3).toFixed(1)}
-            y={(p.y + 1).toFixed(1)}
-            fontSize="6"
-            fill="currentColor"
-            className="text-muted-foreground"
-            opacity={0.5}
-          >
-            {Math.round(f * 10)}
-          </text>
-        );
-      })}
-
-      {/* ── Axis spokes ── */}
-      {dims.map((_, i) => {
-        const outer = pt(i, maxR);
-        return (
-          <line
-            key={i}
-            x1={cx.toFixed(2)} y1={cy.toFixed(2)}
-            x2={outer.x.toFixed(2)} y2={outer.y.toFixed(2)}
-            stroke="currentColor"
-            strokeOpacity={0.20}
-            strokeWidth={0.75}
-            className="text-muted-foreground"
-          />
-        );
-      })}
-
-      {/* ── Data filled area ── */}
-      <polygon
-        points={dataPts}
-        fill={colorFill}
-        stroke={color}
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-      />
-
-      {/* ── Data point dots ── */}
-      {dims.map((d, i) => {
-        const p = pt(i, (d.score / 10) * maxR);
-        return (
-          <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={3.8} fill={color} />
-        );
-      })}
-
-      {/* ── Center: IC Score ── */}
-      <text
-        x={cx}
-        y={cy - 10}
-        textAnchor="middle"
-        fontSize="22"
-        fontWeight="900"
-        fill={color}
-      >
-        {overallScore}
-      </text>
-      <text
-        x={cx}
-        y={cy + 5}
-        textAnchor="middle"
-        fontSize="6"
-        fontWeight="700"
-        letterSpacing="1.2"
-        fill="currentColor"
-        className="text-muted-foreground"
-        opacity={0.7}
-      >
-        IC SCORE
-      </text>
-      <text
-        x={cx}
-        y={cy + 17}
-        textAnchor="middle"
-        fontSize="6.5"
-        fontWeight="600"
-        fill={color}
-        opacity={0.85}
-      >
-        {centerLabel}
-      </text>
-
-      {/* ── Vertex labels (dimension name + score) ── */}
-      {dims.map((d, i) => {
-        const lp = pt(i, labelR);
-        // Text anchor based on horizontal position relative to center
-        let anchor: 'middle' | 'start' | 'end' = 'middle';
-        if (lp.x < cx - 12) anchor = 'end';
-        else if (lp.x > cx + 12) anchor = 'start';
-
-        // Vertical offset: push label up for top vertex, down for bottom
-        const dy = lp.y < cy ? -2 : 2;
-
-        return (
-          <g key={i}>
-            {/* Dimension name */}
-            <text
-              x={lp.x.toFixed(2)}
-              y={(lp.y + dy - 5).toFixed(2)}
-              textAnchor={anchor}
-              fontSize="8"
-              fontWeight="700"
-              fill="currentColor"
-              className="text-foreground"
-            >
-              {d.shortLabel}
-            </text>
-            {/* Score value */}
-            <text
-              x={lp.x.toFixed(2)}
-              y={(lp.y + dy + 6).toFixed(2)}
-              textAnchor={anchor}
-              fontSize="7"
-              fill="currentColor"
-              className="text-muted-foreground"
-              opacity={0.8}
-            >
-              {d.score}/10
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function EvaluationView({ problem, solution, evaluation, showRegisterCta = false, pivotSuggestions }: EvaluationViewProps) {
@@ -311,12 +103,12 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
     : score >= 60 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30'
     : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30';
 
-  const dimensions = [
-    { name: 'Feasibility',     score: evaluation.feasibility,    icon: Zap,          color: 'bg-indigo-500',  desc: 'Is it technically and operationally viable?' },
-    { name: 'Effectiveness',   score: evaluation.effectiveness,  icon: CheckCircle2, color: 'bg-emerald-500', desc: 'How well does it solve the core problem?' },
-    { name: 'Scalability',     score: evaluation.scalability,    icon: Scale,         color: 'bg-blue-500',    desc: 'Can it scale to millions of users?' },
-    { name: 'Cost Efficiency', score: evaluation.costEfficiency, icon: DollarSign,    color: 'bg-amber-500',   desc: 'Is it cost-effective to build and run?' },
-    { name: 'Innovation',      score: evaluation.innovation,     icon: Lightbulb,     color: 'bg-violet-500',  desc: 'How creative and differentiated is it?' },
+  const dimensions: { name: string; score: number; icon: DimIconName; color: string; desc: string }[] = [
+    { name: 'Feasibility',     score: evaluation.feasibility,    icon: 'Zap',          color: 'bg-indigo-500',  desc: 'Is it technically and operationally viable?' },
+    { name: 'Effectiveness',   score: evaluation.effectiveness,  icon: 'CheckCircle2', color: 'bg-emerald-500', desc: 'How well does it solve the core problem?' },
+    { name: 'Scalability',     score: evaluation.scalability,    icon: 'Scale',        color: 'bg-blue-500',    desc: 'Can it scale to millions of users?' },
+    { name: 'Cost Efficiency', score: evaluation.costEfficiency, icon: 'DollarSign',   color: 'bg-amber-500',   desc: 'Is it cost-effective to build and run?' },
+    { name: 'Innovation',      score: evaluation.innovation,     icon: 'Lightbulb',    color: 'bg-violet-500',  desc: 'How creative and differentiated is it?' },
   ];
 
   const totalModels = evaluation.successfulModels.length + evaluation.failedModels.length;
@@ -383,15 +175,16 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
             <div className="space-y-2 text-sm">
               <div>
                 <span className="font-semibold text-muted-foreground block text-xs uppercase tracking-wider">Problem Context:</span>
-                <p className="text-foreground/80 line-clamp-3 leading-relaxed mt-0.5">{problem.description}</p>
+                <ExpandableText content={problem.description} label="problem context" />
               </div>
               <div className="border-t border-border my-2" />
               <div>
                 <span className="font-semibold text-muted-foreground block text-xs uppercase tracking-wider">Proposed Solution:</span>
-                <p className="text-foreground/80 line-clamp-3 leading-relaxed mt-0.5">{solution.content}</p>
+                <ExpandableText content={solution.content} label="solution" />
               </div>
             </div>
           </div>
+
           <div className="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs text-muted-foreground font-mono">
             <span>Checked: {new Date(evaluation.createdAt).toLocaleDateString()}</span>
             <span>{solution.createdAt ? 'Registered' : 'Guest Evaluation'}</span>
@@ -408,22 +201,17 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
             <CardDescription>Averaged consensus score out of 10</CardDescription>
           </CardHeader>
           <CardContent className="p-0 space-y-5">
-            {dimensions.map((dim, index) => {
-              const Icon = dim.icon;
-              return (
-                <div key={index} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-foreground flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      {dim.name}
-                    </span>
-                    <span className="font-mono font-bold text-foreground">{dim.score} / 10</span>
-                  </div>
-                  <Progress value={dim.score * 10} className="h-2 bg-muted" indicatorClassName={dim.color} />
-                  <p className="text-[11px] text-muted-foreground italic leading-tight">{dim.desc}</p>
-                </div>
-              );
-            })}
+            {dimensions.map((dim, index) => (
+              <AnimatedDimBar
+                key={index}
+                name={dim.name}
+                score={dim.score}
+                icon={dim.icon}
+                color={dim.color}
+                desc={dim.desc}
+                delay={index * 80}
+              />
+            ))}
           </CardContent>
         </Card>
 
@@ -442,36 +230,64 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
 
           {/* Strengths / Weaknesses */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* ── Key Strengths with Impact badges ── */}
             <Card className="border-emerald-500/20 bg-emerald-500/5 p-5 shadow-sm">
               <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
                 Key Strengths
               </h3>
-              <ul className="space-y-2.5">
-                {evaluation.feedback.strengths.map((str, i) => (
-                  <li key={i} className="text-xs text-foreground/80 flex items-start gap-2 leading-relaxed">
-                    <span className="text-emerald-500 mt-0.5">•</span>
-                    <span>{str}</span>
-                  </li>
-                ))}
+              <ul className="space-y-3">
+                {evaluation.feedback.strengths.map((str, i) => {
+                  // Heuristic: first 1-2 items are highest-impact
+                  const impact = i === 0 ? { label: 'High', cls: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30' }
+                    : i === 1 ? { label: 'Medium', cls: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' }
+                    : { label: 'Low', cls: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20' };
+                  return (
+                    <li key={i} className="flex items-start gap-2 text-xs text-foreground/80 leading-relaxed">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${impact.cls}`}>
+                            {impact.label} Impact
+                          </span>
+                        </div>
+                        <span>{str}</span>
+                      </div>
+                    </li>
+                  );
+                })}
                 {evaluation.feedback.strengths.length === 0 && (
                   <li className="text-xs text-muted-foreground italic">No significant strengths highlighted.</li>
                 )}
               </ul>
             </Card>
 
+            {/* ── Weaknesses with Severity badges ── */}
             <Card className="border-rose-500/20 bg-rose-500/5 p-5 shadow-sm">
               <h3 className="text-sm font-bold text-rose-700 dark:text-rose-400 mb-3 flex items-center gap-2">
                 <HeartCrack className="h-4 w-4" />
                 Areas for Improvement
               </h3>
-              <ul className="space-y-2.5">
-                {evaluation.feedback.weaknesses.map((weak, i) => (
-                  <li key={i} className="text-xs text-foreground/80 flex items-start gap-2 leading-relaxed">
-                    <span className="text-rose-500 mt-0.5">•</span>
-                    <span>{weak}</span>
-                  </li>
-                ))}
+              <ul className="space-y-3">
+                {evaluation.feedback.weaknesses.map((weak, i) => {
+                  // Heuristic: first item Critical, next Moderate, rest Minor
+                  const severity = i === 0 ? { label: 'Critical', cls: 'bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-500/30' }
+                    : i === 1 ? { label: 'Moderate', cls: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' }
+                    : { label: 'Minor', cls: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20' };
+                  return (
+                    <li key={i} className="flex items-start gap-2 text-xs text-foreground/80 leading-relaxed">
+                      <span className="text-rose-500 mt-0.5 flex-shrink-0">•</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${severity.cls}`}>
+                            {severity.label}
+                          </span>
+                        </div>
+                        <span>{weak}</span>
+                      </div>
+                    </li>
+                  );
+                })}
                 {evaluation.feedback.weaknesses.length === 0 && (
                   <li className="text-xs text-muted-foreground italic">No critical weaknesses identified.</li>
                 )}
@@ -480,6 +296,16 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
           </div>
         </div>
       </div>
+
+      {/* ── Score Coaching Card ── */}
+      <ScoreCoachingCard
+        feasibility={evaluation.feasibility}
+        effectiveness={evaluation.effectiveness}
+        scalability={evaluation.scalability}
+        costEfficiency={evaluation.costEfficiency}
+        innovation={evaluation.innovation}
+        overallScore={evaluation.overallScore}
+      />
 
       {/* ── Row 3: Mesh Multi-Model Breakdown ── */}
       {rawResponses.length > 0 && (
@@ -562,36 +388,6 @@ export function EvaluationView({ problem, solution, evaluation, showRegisterCta 
           </div>
         </Card>
       )}
-
-      {/* ── Row 4: Model Audit Trail ── */}
-      <Card className="border-border bg-muted/30 p-4 text-xs text-muted-foreground shadow-sm">
-        <div className="flex flex-col sm:flex-row justify-between gap-3">
-          <div>
-            <span className="font-semibold block text-foreground/60 uppercase tracking-wider text-[10px] mb-1">
-              Evaluating Models (via Mesh API):
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {evaluation.successfulModels.map((m, i) => (
-                <Badge key={i} className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
-                  ✓ {m}
-                </Badge>
-              ))}
-            </div>
-          </div>
-          {evaluation.failedModels.length > 0 && (
-            <div>
-              <span className="font-semibold block text-rose-600 dark:text-rose-400 uppercase tracking-wider text-[10px] mb-1">Failed / Timed-Out:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {evaluation.failedModels.map((m, i) => (
-                  <Badge key={i} className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-[10px]">
-                    ✗ {m}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
 
       {/* ── Register CTA (guests) ── */}
       {showRegisterCta && (

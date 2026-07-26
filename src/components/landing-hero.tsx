@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { QuickEvalForm } from '@/components/quick-eval-form';
 import { GuidedEvalForm } from '@/components/guided-eval-form';
+import { JourneySection } from '@/components/journey-section';
 import {
   Sparkles,
   ListChecks,
@@ -98,7 +99,7 @@ export function LandingHero() {
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/25 bg-violet-950/25 px-4 py-1.5 text-sm font-medium text-violet-300 backdrop-blur-sm">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>AI-Powered Startup Idea Validation</span>
+              <span>Validate Before You Build. Ship What Survives.</span>
             </div>
           </div>
 
@@ -246,24 +247,26 @@ export function LandingHero() {
         </div>
       </section>
 
-      {/* ── Feature strip (only on choose screen) ── */}
+      {/* ── Journey section (only on choose screen) ── */}
       {mode === 'choose' && (
-        <section className="border-t border-zinc-900/60 bg-zinc-950/30 py-16 backdrop-blur-sm">
+        <JourneySection />
+      )}
+
+      {/* ── Compact feature strip ── */}
+      {mode === 'choose' && (
+        <section className="border-t border-zinc-900/40 bg-black/60 py-12">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-10">
-              What you get with every evaluation
+            <p className="text-center text-[10px] font-bold uppercase tracking-widest text-zinc-700 mb-8">
+              Also included with every evaluation
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {FEATURES.map(({ icon: Icon, iconBg, iconColor, title, desc }) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {FEATURES.map(({ icon: Icon, iconColor, title }) => (
                 <div
                   key={title}
-                  className="rounded-xl border border-zinc-900 bg-zinc-950 p-5 space-y-3 relative overflow-hidden group hover:border-zinc-800/80 transition-all duration-300"
+                  className="rounded-xl border border-zinc-900 bg-zinc-950 p-4 flex flex-col items-center gap-2 text-center group hover:border-zinc-800 hover:scale-[1.03] transition-all duration-200"
                 >
-                  <div className={`rounded-lg p-2.5 w-fit ${iconBg}`}>
-                    <Icon className={`h-5 w-5 ${iconColor}`} />
-                  </div>
-                  <h3 className="text-sm font-bold text-white">{title}</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">{desc}</p>
+                  <Icon className={`h-4 w-4 ${iconColor} group-hover:scale-110 transition-transform duration-200`} />
+                  <span className="text-[10px] font-semibold text-zinc-500 leading-tight group-hover:text-zinc-300 transition-colors">{title}</span>
                 </div>
               ))}
             </div>

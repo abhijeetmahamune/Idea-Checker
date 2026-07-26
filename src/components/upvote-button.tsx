@@ -4,15 +4,17 @@ import { useCallback, useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ThumbsUp } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface UpvoteButtonProps {
   problemId: string;
   initialCount: number;
   initialUpvoted: boolean;
+  isGuest?: boolean;
 }
 
-export function UpvoteButton({ problemId, initialCount, initialUpvoted }: UpvoteButtonProps) {
+export function UpvoteButton({ problemId, initialCount, initialUpvoted, isGuest = false }: UpvoteButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -23,6 +25,18 @@ export function UpvoteButton({ problemId, initialCount, initialUpvoted }: Upvote
   );
 
   const handleUpvote = useCallback(async () => {
+    // Guests: show login prompt instead
+    if (isGuest) {
+      toast.info(
+        <span>
+          <Link href="/register" className="font-bold text-violet-400 underline underline-offset-2">Create a free account</Link>
+          {' '}to upvote ideas.
+        </span>,
+        { duration: 4000 }
+      );
+      return;
+    }
+
     // Optimistically toggle before the request
     startTransition(() => {
       addOptimistic({
@@ -45,7 +59,7 @@ export function UpvoteButton({ problemId, initialCount, initialUpvoted }: Upvote
       // Revert — optimistic state is re-derived from initialCount/initialUpvoted on next render
       router.refresh();
     }
-  }, [problemId, optimistic, router, addOptimistic]);
+  }, [problemId, optimistic, router, addOptimistic, isGuest]);
 
   return (
     <button

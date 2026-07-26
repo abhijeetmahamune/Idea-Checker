@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { solutions, problems, evaluations, simulations, solutionRatings } from '@/db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/navbar';
 import { EvaluationView } from '@/components/evaluation-view';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -48,7 +49,7 @@ export default async function GuestEvaluationPage({
     .where(eq(simulations.solutionId, solutionId))
     .orderBy(sql`${simulations.createdAt} desc`);
 
-  // Fetch community score (read-only for guests)
+  // Fetch community score
   const ratingStats = await db
     .select({
       averageRating: sql<number>`round(avg(${solutionRatings.rating})::numeric, 1)::float8`,
@@ -57,9 +58,21 @@ export default async function GuestEvaluationPage({
     .from(solutionRatings)
     .where(eq(solutionRatings.solutionId, solutionId));
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const userRatingResult = user
+    ? await db
+        .select({ rating: solutionRatings.rating })
+        .from(solutionRatings)
+        .where(and(eq(solutionRatings.solutionId, solutionId), eq(solutionRatings.userId, user.id)))
+        .limit(1)
+    : [];
+
   const communityScore = {
     average: ratingStats[0]?.averageRating ?? 0,
     total: ratingStats[0]?.totalRatings ?? 0,
+    userRating: userRatingResult[0]?.rating ?? 0,
   };
 
   return (
@@ -99,18 +112,18 @@ export default async function GuestEvaluationPage({
                     problem={problem}
                     solution={solution}
                     evaluation={evaluation}
-                    showRegisterCta={true}
+                    showRegisterCta={!user}
                   />
                 </div>
-                {/* Community Score — read-only for guests */}
+                {/* Community Score */}
                 <div className="lg:col-span-4 lg:sticky lg:top-20">
                   <CommunityScoreWidget
                     solutionId={solutionId}
                     initialAverage={communityScore.average}
                     initialTotal={communityScore.total}
-                    initialUserRating={0}
-                    isOwner={false}
-                    isGuest={true}
+                    initialUserRating={communityScore.userRating}
+                    isOwner={user ? problem.userId === user.id : false}
+                    isGuest={!user}
                   />
                 </div>
               </div>

@@ -7,6 +7,7 @@ import type { DeepReport } from '@/lib/deep-report-generator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { DeepReportSkeleton } from '@/components/deep-report-skeleton';
 import {
   FileSearch, TrendingUp, Globe, Swords, DollarSign, Cpu, Megaphone,
   ShieldAlert, Users, Award, Loader2, ChevronDown, ChevronUp, CheckCircle2,
@@ -101,6 +102,11 @@ export function DeepReportView({
 
   // ── Empty state ───────────────────────────────────────────────────────────────
   if (!report) {
+    // Show skeleton while generating
+    if (loading) {
+      return <DeepReportSkeleton />;
+    }
+
     return (
       <div className="min-h-[420px] flex flex-col items-center justify-center gap-6 text-center p-12">
         <div className="h-20 w-20 rounded-2xl bg-violet-500/8 border border-violet-500/15 flex items-center justify-center">
@@ -113,7 +119,7 @@ export function DeepReportView({
             technical risks, go-to-market strategy, and a final verdict — all specific to your idea.
           </p>
           {!isOwner && (
-            <p className="text-xs text-zinc-600 italic mt-2">The report hasn't been generated yet. Only the solution owner can generate it.</p>
+            <p className="text-xs text-zinc-600 italic mt-2">The report hasn&apos;t been generated yet. Only the solution owner can generate it.</p>
           )}
         </div>
         {isOwner && (
@@ -122,15 +128,16 @@ export function DeepReportView({
             disabled={loading}
             className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold px-8 py-5 text-sm flex items-center gap-2 shadow-lg shadow-violet-500/20"
           >
-            {loading ? (
-              <><Loader2 className="h-4 w-4 animate-spin" />Analysing your idea (30–60s)...</>
-            ) : (
-              <><FileSearch className="h-4 w-4" />Generate Deep Report</>
-            )}
+            <FileSearch className="h-4 w-4" />Generate Deep Report
           </Button>
         )}
       </div>
     );
+  }
+
+  // ── Loading state for re-generation (report exists but regenerating) ─────────
+  if (loading) {
+    return <DeepReportSkeleton />;
   }
 
   // ── Report view ───────────────────────────────────────────────────────────────

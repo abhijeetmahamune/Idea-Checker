@@ -1,13 +1,12 @@
 import { db } from '@/db';
 import { problems, solutions, users, problemUpvotes } from '@/db/schema';
 import { eq, and, isNull, sql } from 'drizzle-orm';
-import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
-import { Calendar, FileText, User, Globe, ArrowRight, ArrowUpDown } from 'lucide-react';
+import { Calendar, FileText, User, Globe, ArrowRight, ArrowUpDown, LogIn } from 'lucide-react';
 import { UpvoteButton } from '@/components/upvote-button';
 
 export const revalidate = 0;
@@ -22,8 +21,7 @@ export default async function CommunityBoardPage({
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) redirect('/login');
+  // No redirect — guests can view community in read-only mode
 
   // Fetch all public problems with author details, solution count, upvote count, and user's vote
   const publicProblems = await db
@@ -50,13 +48,15 @@ export default async function CommunityBoardPage({
         : sql`${problems.createdAt} desc`
     );
 
-  // Fetch user's upvotes in one query
-  const userUpvotes = await db
-    .select({ problemId: problemUpvotes.problemId })
-    .from(problemUpvotes)
-    .where(eq(problemUpvotes.userId, user.id));
-
-  const upvotedSet = new Set(userUpvotes.map(u => u.problemId));
+  // Only fetch user upvotes if logged in
+  const upvotedSet = new Set<string>();
+  if (user) {
+    const userUpvotes = await db
+      .select({ problemId: problemUpvotes.problemId })
+      .from(problemUpvotes)
+      .where(eq(problemUpvotes.userId, user.id));
+    userUpvotes.forEach(u => upvotedSet.add(u.problemId));
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-7xl">
@@ -88,13 +88,36 @@ export default async function CommunityBoardPage({
             </Link>
           </div>
 
-          <Link href="/dashboard">
-            <Button className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs">
-              Your Workspace
-            </Button>
-          </Link>
+          {user ? (
+            <Link href="/dashboard">
+              <Button className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs">
+                Your Workspace
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/register">
+              <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5">
+                <LogIn className="h-3.5 w-3.5" />
+                Join Free
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
+
+      {/* Guest banner */}
+      {!user && (
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-violet-500/20 bg-violet-950/20 text-sm">
+          <LogIn className="h-4 w-4 text-violet-400 flex-shrink-0" />
+          <p className="text-zinc-400">
+            You&apos;re browsing as a guest.{' '}
+            <Link href="/register" className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">
+              Create a free account
+            </Link>{' '}
+            to upvote ideas, submit your own, and get AI evaluations.
+          </p>
+        </div>
+      )}
 
       {/* Grid List */}
       {publicProblems.length === 0 ? (
@@ -166,11 +189,12 @@ export default async function CommunityBoardPage({
                         <span>{p.solutionCount}</span>
                       </div>
 
-                      {/* Upvote button */}
+                      {/* Upvote button — guest-aware */}
                       <UpvoteButton
                         problemId={p.id}
                         initialCount={p.upvoteCount}
                         initialUpvoted={upvotedSet.has(p.id)}
+                        isGuest={!user}
                       />
                     </div>
                   </div>

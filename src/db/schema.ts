@@ -4,6 +4,11 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey(), // Links directly to Supabase auth.users.id
   email: text('email').unique().notNull(),
   name: text('name'),
+  bio: text('bio'),
+  avatarUrl: text('avatar_url'),
+  location: text('location'),
+  featuredProblems: text('featured_problems').array(), // Up to 3 problem UUIDs to showcase on profile
+  featuredSolutions: text('featured_solutions').array(), // Up to 3 solution UUIDs to showcase on profile
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

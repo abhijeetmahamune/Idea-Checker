@@ -48,7 +48,8 @@ export async function updateSession(request: NextRequest) {
   
   // Dashboard routes protection
   const isDashboardRoute = url.pathname.startsWith('/dashboard') || 
-                          url.pathname.startsWith('/problems');
+                          url.pathname.startsWith('/problems') ||
+                          url.pathname.startsWith('/account');
 
   if (isDashboardRoute && !user) {
     url.pathname = '/login';
