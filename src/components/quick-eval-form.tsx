@@ -222,6 +222,8 @@ export function QuickEvalForm() {
             {/* Action Button */}
             <Button
               type="submit"
+              isLoading={loading}
+              loadingText="Submitting Solution..."
               className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold py-6 shadow-lg shadow-violet-600/10 hover:shadow-violet-600/25 transition-all duration-200 text-base flex items-center justify-center gap-2 group"
             >
               <Rocket className="h-5 w-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

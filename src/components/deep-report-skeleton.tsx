@@ -18,18 +18,18 @@ const STATUS_MESSAGES = [
 function SkeletonRow({ delay = 0 }: { delay?: number }) {
   return (
     <div
-      className="rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden"
+      className="rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-2.5">
           {/* Icon placeholder */}
-          <div className="h-7 w-7 rounded-lg bg-zinc-800 skeleton-shimmer" />
+          <div className="h-7 w-7 rounded-lg bg-muted skeleton-shimmer" />
           {/* Title placeholder */}
-          <div className="h-4 rounded-md bg-zinc-800 skeleton-shimmer" style={{ width: `${100 + delay * 0.3}px` }} />
+          <div className="h-4 rounded-md bg-muted skeleton-shimmer" style={{ width: `${100 + delay * 0.3}px` }} />
         </div>
         {/* Chevron placeholder */}
-        <div className="h-4 w-4 rounded bg-zinc-800/60 skeleton-shimmer" />
+        <div className="h-4 w-4 rounded bg-muted/60 skeleton-shimmer" />
       </div>
     </div>
   );
@@ -59,7 +59,7 @@ export function DeepReportSkeleton() {
   return (
     <div className="space-y-3">
       {/* ── Status message banner ── */}
-      <div className="rounded-xl border border-violet-500/25 bg-violet-950/20 p-5 mb-6 relative overflow-hidden">
+      <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 dark:bg-violet-950/30 p-5 mb-6 relative overflow-hidden">
         {/* Animated background glow */}
         <div className="absolute inset-0 bg-gradient-to-r from-violet-600/5 via-indigo-600/8 to-violet-600/5 animate-pulse" />
 
@@ -67,9 +67,9 @@ export function DeepReportSkeleton() {
           {/* Spinning indicator */}
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
-              <span className="h-2 w-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="h-2 w-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="h-2 w-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="h-2.5 w-2.5 rounded-full bg-violet-500 dark:bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="h-2.5 w-2.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
 
@@ -78,12 +78,12 @@ export function DeepReportSkeleton() {
             className="transition-all duration-300 ease-in-out"
             style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(-6px)' }}
           >
-            <p className="text-base font-bold text-white tracking-tight">{current.text}</p>
-            <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">{current.sub}</p>
+            <p className="text-base font-bold text-foreground tracking-tight">{current.text}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{current.sub}</p>
           </div>
 
           {/* Progress hint */}
-          <p className="text-[10px] text-zinc-600 font-mono">
+          <p className="text-[10px] text-muted-foreground/80 font-mono">
             This usually takes 30–60 seconds · Please don&apos;t close this tab
           </p>
         </div>
@@ -91,11 +91,11 @@ export function DeepReportSkeleton() {
 
       {/* ── Skeleton section rows ── */}
       {/* Verdict banner skeleton */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 mb-2 flex items-center gap-3">
-        <div className="h-5 w-5 rounded bg-zinc-800 skeleton-shimmer flex-shrink-0" />
+      <div className="rounded-xl border border-border bg-card/60 p-4 mb-2 flex items-center gap-3">
+        <div className="h-5 w-5 rounded bg-muted skeleton-shimmer flex-shrink-0" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-24 rounded bg-zinc-800 skeleton-shimmer" />
-          <div className="h-4 w-3/4 rounded bg-zinc-800 skeleton-shimmer" />
+          <div className="h-3 w-24 rounded bg-muted skeleton-shimmer" />
+          <div className="h-4 w-3/4 rounded bg-muted skeleton-shimmer" />
         </div>
       </div>
 

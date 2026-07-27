@@ -109,7 +109,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
   function handleBack() {
     if (step.type === 'problem-title') {
       animateTo({ type: 'domain' });
-      setSelectedDomain(null);
+      setTimeout(() => setSelectedDomain(null), 180);
     } else if (step.type === 'problem-desc') {
       animateTo({ type: 'problem-title' });
     } else if (step.type === 'question') {
@@ -398,7 +398,7 @@ function StepShell({
   children,
 }: {
   animating: boolean;
-  domain: Domain;
+  domain?: Domain | null;
   stepLabel: string;
   stepNum: number;
   totalSteps: number;
@@ -416,7 +416,7 @@ function StepShell({
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] font-semibold text-violet-600 dark:text-violet-300 bg-violet-500/10 border border-violet-500/20 rounded-full px-2.5 py-1">
-            <span>{domain.icon}</span>
+            {domain?.icon && <span>{domain.icon}</span>}
             <span className="truncate max-w-[160px]">{stepLabel}</span>
           </div>
           <span className="text-[10px] text-muted-foreground font-mono">{stepNum}/{totalSteps}</span>

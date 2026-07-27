@@ -3,7 +3,7 @@
 import { useCallback, useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ThumbsUp } from 'lucide-react';
+import { ThumbsUp, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -67,20 +67,23 @@ export function UpvoteButton({ problemId, initialCount, initialUpvoted, isGuest 
       disabled={isPending}
       aria-label={optimistic.upvoted ? 'Remove upvote' : 'Upvote this idea'}
       className={cn(
-        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-200 select-none cursor-pointer',
+        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-150 ease-out select-none cursor-pointer active:scale-90 hover:scale-105',
         optimistic.upvoted
           ? 'bg-violet-500/15 border-violet-500/40 text-violet-600 dark:text-violet-300 hover:bg-violet-500/20'
           : 'bg-muted/60 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
         isPending && 'opacity-60 cursor-not-allowed'
       )}
     >
-      <ThumbsUp
-        className={cn(
-          'h-3.5 w-3.5 transition-transform duration-150',
-          optimistic.upvoted ? 'fill-violet-500 text-violet-600 dark:text-violet-400 scale-110' : '',
-          isPending && 'animate-pulse'
-        )}
-      />
+      {isPending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-500" />
+      ) : (
+        <ThumbsUp
+          className={cn(
+            'h-3.5 w-3.5 transition-transform duration-150',
+            optimistic.upvoted ? 'fill-violet-500 text-violet-600 dark:text-violet-400 scale-110' : ''
+          )}
+        />
+      )}
       <span className="font-mono tabular-nums">{optimistic.count}</span>
     </button>
   );
