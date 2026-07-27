@@ -241,3 +241,90 @@
   background-color: rgba(18, 23, 34, 0.75);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
+
+/* ── Homepage: Floating gradient orb animations ── */
+@keyframes float-1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -20px) scale(1.05); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes float-2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-20px, 30px) scale(1.08); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes float-3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(15px, 15px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-float-1 {
+  animation: float-1 20s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-2 25s ease-in-out infinite;
+}
+
+.animate-float-3 {
+  animation: float-3 18s ease-in-out infinite;
+}
+
+/* ── Homepage: AI model ticker marquee ── */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+/* ── Homepage: Decorative pentagon subtle pulse ── */
+@keyframes subtle-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50%      { transform: scale(1.02); opacity: 1; }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 4s ease-in-out infinite;
+}
+
+/* ── Homepage: CTA floating dots ── */
+@keyframes dot-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+.animate-dot-float {
+  animation: dot-float 3s ease-in-out infinite;
+}
+
+/* ── Homepage: Gradient border glow on hover ── */
+.glow-border-violet {
+  position: relative;
+}
+
+.glow-border-violet::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, oklch(0.68 0.22 270 / 0.3), oklch(0.72 0.18 195 / 0.2), oklch(0.68 0.22 270 / 0.3));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border-violet:hover::after {
+  opacity: 1;
+}
+
+/* ── Homepage: Ticker gradient fade edges ── */
+.ticker-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}

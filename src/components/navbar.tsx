@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { LightbulbIcon, LayoutDashboard, Globe, Settings, ChevronDown, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { MobileNav } from '@/components/mobile-nav';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,8 +37,8 @@ export async function Navbar() {
           </span>
         </Link>
 
-        {/* Navigation & Actions */}
-        <nav className="flex items-center space-x-2">
+        {/* Desktop Navigation & Actions */}
+        <nav className="hidden md:flex items-center space-x-2">
           {/* Community visible to everyone */}
           <Link href="/community" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 px-2 py-1">
             <Globe className="h-4 w-4" />
@@ -115,6 +116,23 @@ export async function Navbar() {
             </>
           )}
         </nav>
+
+        {/* Mobile Navigation & Quick Actions */}
+        <div className="flex md:hidden items-center space-x-2">
+          <ThemeToggle />
+          <MobileNav
+            user={
+              user
+                ? {
+                    id: user.id,
+                    email: user.email,
+                    name: userName,
+                    avatarUrl,
+                  }
+                : null
+            }
+          />
+        </div>
       </div>
     </header>
   );
