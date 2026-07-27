@@ -44,32 +44,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center px-4 relative overflow-hidden transition-colors duration-200">
       {/* Background Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-violet-900/10 filter blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/10 filter blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-violet-500/10 dark:bg-violet-900/10 filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-900/10 filter blur-[120px] pointer-events-none" />
 
       {/* Logo */}
       <Link href="/" className="flex items-center space-x-2 mb-8">
         <div className="rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 p-2 text-white shadow-md shadow-violet-500/20">
           <Lightbulb className="h-6 w-6" />
         </div>
-        <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+        <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-600 via-indigo-500 to-cyan-500 bg-clip-text text-transparent">
           Idea Checker
         </span>
       </Link>
 
-      <Card className="w-full max-w-md border-border bg-zinc-950/60 backdrop-blur-md shadow-2xl relative overflow-hidden">
+      <Card className="w-full max-w-md border-border bg-card/80 dark:bg-zinc-950/60 backdrop-blur-md shadow-xl dark:shadow-2xl relative overflow-hidden">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription className="text-zinc-500">
+          <CardTitle className="font-display text-2xl font-bold text-foreground">Welcome Back</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Log in to manage your problems and evaluate multi-solutions.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-xs text-rose-400 font-medium">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-xs text-destructive font-medium">
                 {error}
               </div>
             )}
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 required
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
               />
             </div>
             <div className="space-y-2">
@@ -94,7 +94,7 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 required
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
               />
             </div>
           </CardContent>
@@ -102,7 +102,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-md transition-all duration-200"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-md transition-all duration-200 cursor-pointer"
             >
               {isPending ? (
                 <>
@@ -115,9 +115,9 @@ export default function LoginPage() {
             </Button>
 
             <div className="relative flex py-1 items-center w-full">
-              <div className="flex-grow border-t border-zinc-800"></div>
-              <span className="flex-shrink mx-4 text-zinc-500 text-xs uppercase">Or</span>
-              <div className="flex-grow border-t border-zinc-800"></div>
+              <div className="flex-grow border-t border-border"></div>
+              <span className="flex-shrink mx-4 text-muted-foreground text-xs uppercase font-medium">Or</span>
+              <div className="flex-grow border-t border-border"></div>
             </div>
 
             <Button
@@ -125,14 +125,14 @@ export default function LoginPage() {
               variant="outline"
               disabled={isPending}
               onClick={handleGuestLogin}
-              className="w-full border-zinc-800 hover:bg-zinc-900 text-zinc-300 hover:text-white transition-all duration-200"
+              className="w-full border-border hover:bg-muted text-foreground transition-all duration-200 cursor-pointer"
             >
               Continue as Guest
             </Button>
 
-            <div className="text-sm text-center text-zinc-500">
+            <div className="text-sm text-center text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-violet-400 hover:underline">
+              <Link href="/register" className="text-violet-600 dark:text-violet-400 hover:underline font-medium">
                 Sign up
               </Link>
             </div>

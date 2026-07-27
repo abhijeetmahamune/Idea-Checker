@@ -29,26 +29,26 @@ const SECTIONS = [
 ] as const;
 
 const COLOR_MAP: Record<string, { icon: string; badge: string; border: string; bg: string }> = {
-  violet: { icon: 'text-violet-400', badge: 'bg-violet-500/10 text-violet-300 border-violet-500/20', border: 'border-l-violet-500', bg: 'bg-violet-500/5' },
-  emerald: { icon: 'text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', border: 'border-l-emerald-500', bg: 'bg-emerald-500/5' },
-  cyan:    { icon: 'text-cyan-400', badge: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20', border: 'border-l-cyan-500', bg: 'bg-cyan-500/5' },
-  orange:  { icon: 'text-orange-400', badge: 'bg-orange-500/10 text-orange-300 border-orange-500/20', border: 'border-l-orange-500', bg: 'bg-orange-500/5' },
-  amber:   { icon: 'text-amber-400', badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20', border: 'border-l-amber-500', bg: 'bg-amber-500/5' },
-  indigo:  { icon: 'text-indigo-400', badge: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20', border: 'border-l-indigo-500', bg: 'bg-indigo-500/5' },
-  rose:    { icon: 'text-rose-400', badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20', border: 'border-l-rose-500', bg: 'bg-rose-500/5' },
-  purple:  { icon: 'text-purple-400', badge: 'bg-purple-500/10 text-purple-300 border-purple-500/20', border: 'border-l-purple-500', bg: 'bg-purple-500/5' },
+  violet: { icon: 'text-violet-600 dark:text-violet-400', badge: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20', border: 'border-l-violet-500', bg: 'bg-violet-500/5' },
+  emerald: { icon: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20', border: 'border-l-emerald-500', bg: 'bg-emerald-500/5' },
+  cyan:    { icon: 'text-cyan-600 dark:text-cyan-400', badge: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20', border: 'border-l-cyan-500', bg: 'bg-cyan-500/5' },
+  orange:  { icon: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20', border: 'border-l-orange-500', bg: 'bg-orange-500/5' },
+  amber:   { icon: 'text-amber-600 dark:text-amber-400', badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20', border: 'border-l-amber-500', bg: 'bg-amber-500/5' },
+  indigo:  { icon: 'text-indigo-600 dark:text-indigo-400', badge: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20', border: 'border-l-indigo-500', bg: 'bg-indigo-500/5' },
+  rose:    { icon: 'text-rose-600 dark:text-rose-400', badge: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20', border: 'border-l-rose-500', bg: 'bg-rose-500/5' },
+  purple:  { icon: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20', border: 'border-l-purple-500', bg: 'bg-purple-500/5' },
 };
 
 const VERDICT_CONFIG = {
-  'Promising':   { bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300', icon: CheckCircle2, dot: 'bg-emerald-500' },
-  'Needs Work':  { bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300',       icon: AlertTriangle, dot: 'bg-amber-500' },
-  'Abandon':     { bg: 'bg-rose-500/10 border-rose-500/30 text-rose-300',          icon: XCircle,       dot: 'bg-rose-500' },
+  'Promising':   { bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300', icon: CheckCircle2, dot: 'bg-emerald-500' },
+  'Needs Work':  { bg: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300',       icon: AlertTriangle, dot: 'bg-amber-500' },
+  'Abandon':     { bg: 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300',          icon: XCircle,       dot: 'bg-rose-500' },
 };
 
 const COMPLEXITY_CONFIG = {
-  'Low':    'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  'Medium': 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  'High':   'bg-rose-500/10 text-rose-300 border-rose-500/20',
+  'Low':    'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+  'Medium': 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+  'High':   'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
 };
 const SEVERITY_CONFIG = COMPLEXITY_CONFIG;
 

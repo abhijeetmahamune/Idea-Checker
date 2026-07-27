@@ -61,36 +61,36 @@ export async function Navbar() {
                   <img
                     src={avatarUrl}
                     alt="User avatar"
-                    className="h-8 w-8 rounded-full ring-1 ring-zinc-700"
+                    className="h-8 w-8 rounded-full ring-1 ring-border"
                   />
                   <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-zinc-950 border-zinc-800">
+                <DropdownMenuContent align="end" className="w-56 bg-card border-border shadow-lg text-foreground">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userName || 'User'}</p>
+                        <p className="text-sm font-medium leading-none text-foreground">{userName || 'User'}</p>
                         <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
                       </div>
                     </DropdownMenuLabel>
                   </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="bg-zinc-800" />
+                  <DropdownMenuSeparator className="bg-border" />
                   <DropdownMenuItem
-                    className="cursor-pointer focus:bg-zinc-900"
+                    className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
                     render={<Link href={`/profile/${user.id}`} />}
                   >
                     <User className="h-4 w-4" />
                     Your Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="cursor-pointer focus:bg-zinc-900"
+                    className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
                     render={<Link href="/account" />}
                   >
                     <Settings className="h-4 w-4" />
                     Account Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="cursor-pointer focus:bg-zinc-900"
+                    className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
                     render={<Link href="/dashboard" />}
                   >
                     <LayoutDashboard className="h-4 w-4" />

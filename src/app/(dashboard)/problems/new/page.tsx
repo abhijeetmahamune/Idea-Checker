@@ -36,21 +36,21 @@ export default function NewProblemPage() {
       {/* Back button */}
       <Link
         href="/dashboard"
-        className="inline-flex items-center text-xs text-zinc-500 hover:text-white transition-colors mb-6 gap-1"
+        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 gap-1"
       >
         <ArrowLeft className="h-3 w-3" />
         Back to Workspace
       </Link>
 
-      <Card className="border-zinc-900 bg-zinc-950/80 shadow-2xl relative overflow-hidden">
+      <Card className="border-border/80 dark:border-zinc-900 bg-card/80 dark:bg-zinc-950/80 shadow-xs relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/5 rounded-full filter blur-2xl pointer-events-none" />
 
-        <CardHeader className="space-y-1.5 pb-6 border-b border-zinc-900">
+        <CardHeader className="space-y-1.5 pb-6 border-b border-border">
           <div className="flex items-center space-x-2">
-            <Lightbulb className="h-5 w-5 text-violet-400" />
-            <CardTitle className="text-xl font-bold tracking-tight">Define Problem Context</CardTitle>
+            <Lightbulb className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            <CardTitle className="font-display text-xl font-bold tracking-tight text-foreground">Define Problem Context</CardTitle>
           </div>
-          <CardDescription className="text-zinc-500">
+          <CardDescription className="text-muted-foreground">
             Set up the target market pain point. You can run multiple solution evaluations against this context later.
           </CardDescription>
         </CardHeader>
@@ -58,31 +58,31 @@ export default function NewProblemPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="pt-6 space-y-5">
             {error && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-xs text-rose-400 font-medium">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-xs text-destructive font-medium">
                 {error}
               </div>
             )}
             
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-semibold flex items-center gap-1.5">
+              <Label htmlFor="title" className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 Problem Name / Title
-                <span className="text-rose-500">*</span>
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
                 name="title"
                 placeholder="e.g. Inefficiencies in local freelance designer hiring workflows"
                 required
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
               />
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-semibold flex items-center gap-1.5">
+              <Label htmlFor="description" className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 Problem Description
-                <span className="text-rose-500">*</span>
+                <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="description"
@@ -90,34 +90,34 @@ export default function NewProblemPage() {
                 placeholder="Describe the issue in detail. Who faces this problem? What is the current standard workaround? Why is it broken? (Min 20 characters)"
                 required
                 rows={5}
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50 resize-y"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50 resize-y"
               />
             </div>
 
             {/* Tags */}
             <div className="space-y-2">
-              <Label htmlFor="tags" className="text-sm font-semibold">
+              <Label htmlFor="tags" className="text-sm font-semibold text-foreground">
                 Tags
               </Label>
               <Input
                 id="tags"
                 name="tags"
                 placeholder="e.g. Freelancing, Workflow, B2B SaaS (comma-separated)"
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
               />
             </div>
           </CardContent>
 
-          <CardFooter className="border-t border-zinc-900/60 pt-6 flex justify-between items-center bg-zinc-950/30">
+          <CardFooter className="border-t border-border pt-6 flex justify-between items-center bg-muted/30 dark:bg-zinc-950/30">
             <Link href="/dashboard">
-              <Button type="button" variant="ghost" className="text-zinc-400 hover:text-white">
+              <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground cursor-pointer">
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-md transition-all duration-200"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-md transition-all duration-200 cursor-pointer"
             >
               {isPending ? (
                 <>

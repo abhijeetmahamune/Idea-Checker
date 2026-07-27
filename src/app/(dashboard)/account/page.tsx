@@ -99,18 +99,18 @@ export default async function AccountPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Account Settings</h1>
+              <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Account Settings</h1>
               <p className="text-sm text-muted-foreground">Manage your profile and security preferences</p>
             </div>
           </div>
           <Link href={`/profile/${user.id}`}>
-            <Button variant="outline" size="sm" className="border-zinc-700 text-zinc-300 hover:bg-zinc-900 hover:text-white gap-1.5">
+            <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-accent gap-1.5 cursor-pointer">
               View Profile
             </Button>
           </Link>
@@ -118,7 +118,7 @@ export default async function AccountPage() {
 
         {/* Activity Stats */}
         <div className="mb-8">
-          <h2 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Your Activity</h2>
+          <h2 className="font-display text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Your Activity</h2>
           <AccountStats stats={stats} />
         </div>
 
@@ -139,7 +139,7 @@ export default async function AccountPage() {
         <div className="mb-8">
           <FeaturedPicker
             title="Featured Problems"
-            icon={<Lightbulb className="h-5 w-5 text-violet-500" />}
+            icon={<Lightbulb className="h-5 w-5 text-violet-600 dark:text-violet-400" />}
             items={problemPickerItems}
             selectedIds={profile.featuredProblems || []}
             maxSelections={3}
@@ -151,7 +151,7 @@ export default async function AccountPage() {
         <div className="mb-8">
           <FeaturedPicker
             title="Featured Solutions"
-            icon={<Zap className="h-5 w-5 text-indigo-500" />}
+            icon={<Zap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />}
             items={solutionPickerItems}
             selectedIds={profile.featuredSolutions || []}
             maxSelections={3}
@@ -165,17 +165,17 @@ export default async function AccountPage() {
         </div>
 
         {/* Logout Section */}
-        <div className="border-t border-zinc-800 pt-6">
+        <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Session</h3>
-              <p className="text-xs text-zinc-500">Sign out of your account on this device</p>
+              <h3 className="font-display text-sm font-semibold text-foreground">Session</h3>
+              <p className="text-xs text-muted-foreground">Sign out of your account on this device</p>
             </div>
             <form action={signOut}>
               <Button 
                 variant="outline" 
                 type="submit" 
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-900 hover:text-white hover:border-zinc-600 gap-2"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10 cursor-pointer gap-2"
               >
                 <LogOut className="h-4 w-4" />
                 Logout

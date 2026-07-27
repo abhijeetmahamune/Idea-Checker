@@ -84,11 +84,11 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <MessageCircle className="h-4 w-4 text-violet-400" />
-        <h3 className="text-sm font-bold text-white">
+        <MessageCircle className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+        <h3 className="font-display text-sm font-bold text-foreground">
           Discussion
           {comments.length > 0 && (
-            <span className="ml-2 text-xs font-mono text-zinc-500">({comments.length})</span>
+            <span className="ml-2 text-xs font-mono text-muted-foreground">({comments.length})</span>
           )}
         </h3>
       </div>
@@ -100,18 +100,18 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
           value={content}
           onChange={e => setContent(e.target.value)}
           placeholder="Share a thought, ask a question, or give feedback..."
-          className="bg-zinc-900/60 border-zinc-800 text-white placeholder:text-zinc-600 text-sm min-h-[80px] resize-none focus:border-violet-500/50"
+          className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 text-sm min-h-[80px] resize-none focus:border-violet-500/50"
           onKeyDown={e => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSubmit();
           }}
         />
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-600">Ctrl+Enter to post</span>
+          <span className="text-[10px] text-muted-foreground">Ctrl+Enter to post</span>
           <Button
             size="sm"
             onClick={handleSubmit}
             disabled={!content.trim() || submitting}
-            className="bg-violet-600 hover:bg-violet-500 text-white text-xs gap-1.5 h-8"
+            className="bg-violet-600 hover:bg-violet-500 text-white text-xs gap-1.5 h-8 cursor-pointer"
           >
             {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             Post
@@ -122,10 +122,10 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
       {/* Comments list */}
       {loading ? (
         <div className="flex justify-center py-6">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-600" />
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : comments.length === 0 ? (
-        <div className="text-center py-8 text-zinc-600 text-sm">
+        <div className="text-center py-8 text-muted-foreground text-sm">
           No comments yet. Be the first to share your thoughts.
         </div>
       ) : (
@@ -139,18 +139,18 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
             return (
               <div
                 key={comment.id}
-                className="flex gap-3 p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/60 group"
+                className="flex gap-3 p-3 rounded-xl bg-card/80 dark:bg-zinc-950/60 border border-border group"
               >
                 {/* Avatar */}
                 <div className="h-8 w-8 rounded-full bg-violet-500/15 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-violet-300">{initial}</span>
+                  <span className="text-xs font-bold text-violet-600 dark:text-violet-300">{initial}</span>
                 </div>
 
                 <div className="flex-grow min-w-0 space-y-1">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">{displayName}</span>
-                      <span className="text-[10px] text-zinc-600 font-mono">
+                      <span className="text-xs font-bold text-foreground">{displayName}</span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
                         {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         {' · '}
                         {date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
@@ -160,7 +160,7 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
                       <button
                         onClick={() => handleDelete(comment.id)}
                         disabled={deletingId === comment.id}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer"
                       >
                         {deletingId === comment.id
                           ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -168,7 +168,7 @@ export function CommentSection({ problemId, currentUserId, isProblemOwner }: Com
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-zinc-300 leading-relaxed break-words">{comment.content}</p>
+                  <p className="text-sm text-foreground leading-relaxed break-words">{comment.content}</p>
                 </div>
               </div>
             );

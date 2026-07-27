@@ -58,37 +58,37 @@ export function EditProblemDialog({ problem }: EditProblemDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button variant="outline" size="sm" className="border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center gap-1.5">
+        <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-1.5 cursor-pointer">
           <Edit className="h-3.5 w-3.5" />
           Edit
         </Button>
       } />
-      <DialogContent className="border-zinc-900 bg-zinc-950 text-white sm:max-w-xl">
+      <DialogContent className="border-border bg-card text-foreground sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Edit Problem Context</DialogTitle>
-          <DialogDescription className="text-zinc-500">
+          <DialogTitle className="font-display text-lg font-bold">Edit Problem Context</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Modify the title, description, or tags of this problem workspace.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-semibold">
-              Problem Name / Title <span className="text-rose-500">*</span>
+            <Label htmlFor="title" className="text-sm font-semibold text-foreground">
+              Problem Name / Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+              className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-semibold">
-              Problem Description <span className="text-rose-500">*</span>
+            <Label htmlFor="description" className="text-sm font-semibold text-foreground">
+              Problem Description <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="description"
@@ -96,36 +96,36 @@ export function EditProblemDialog({ problem }: EditProblemDialogProps) {
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={5}
-              className="bg-background/50 border-border focus-visible:ring-violet-500/50 resize-y"
+              className="bg-background border-border text-foreground focus-visible:ring-violet-500/50 resize-y"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label htmlFor="tags" className="text-sm font-semibold">
+            <Label htmlFor="tags" className="text-sm font-semibold text-foreground">
               Tags (comma-separated)
             </Label>
             <Input
               id="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+              className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
             />
           </div>
 
-          <DialogFooter className="pt-4 border-t border-zinc-900">
+          <DialogFooter className="pt-4 border-t border-border">
             <Button
               type="button"
               variant="ghost"
               onClick={() => setOpen(false)}
-              className="text-zinc-400 hover:text-white"
+              className="text-muted-foreground hover:text-foreground cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold cursor-pointer"
             >
               {isPending ? (
                 <>

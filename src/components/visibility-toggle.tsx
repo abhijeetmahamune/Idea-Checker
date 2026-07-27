@@ -45,10 +45,10 @@ export function VisibilityToggle({ problemId, initialIsPublic }: VisibilityToggl
       variant="outline"
       onClick={handleToggle}
       disabled={isPending}
-      className={`text-xs font-semibold px-3.5 py-1.5 h-auto transition-all duration-300 flex items-center gap-1.5 ${
+      className={`text-xs font-semibold px-3.5 py-1.5 h-auto transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
         isPublic
-          ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
-          : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white'
+          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+          : 'border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground'
       }`}
     >
       {isPending ? (

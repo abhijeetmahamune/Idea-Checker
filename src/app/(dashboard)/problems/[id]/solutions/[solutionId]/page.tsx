@@ -117,15 +117,15 @@ export default async function SolutionEvaluationPage({
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Header back-link */}
-      <div className="max-w-7xl mx-auto mb-8 flex items-center justify-between border-b border-zinc-900 pb-4">
+      <div className="max-w-7xl mx-auto mb-8 flex items-center justify-between border-b border-border pb-4">
         <Link
           href={`/problems/${id}`}
-          className="inline-flex items-center text-xs text-zinc-500 hover:text-white transition-colors gap-1 font-medium"
+          className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors gap-1 font-medium"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Solutions List
         </Link>
-        <span className="text-xs text-zinc-500 font-mono">
+        <span className="text-xs text-muted-foreground font-mono">
           Report Reference: {activeEval.id.substring(0, 8)}
         </span>
       </div>
@@ -141,16 +141,16 @@ export default async function SolutionEvaluationPage({
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="devil" className="flex items-center gap-1.5 data-[state=active]:bg-rose-950/50 data-[state=active]:text-rose-300">
-            😈 Devil&apos;s Advocate
+          <TabsTrigger value="devil" className="flex items-center gap-1.5">
+            Devil&apos;s Advocate
             {latestDevilReport && (
-              <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 px-1.5 py-0 h-4 text-[9px]">Done</Badge>
+              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="deep" className="flex items-center gap-1.5 data-[state=active]:bg-cyan-950/50 data-[state=active]:text-cyan-300">
-            📋 Deep Report
+          <TabsTrigger value="deep" className="flex items-center gap-1.5">
+            Deep Strategic Report
             {deepReport && (
-              <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-1.5 py-0 h-4 text-[9px]">Done</Badge>
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
             )}
           </TabsTrigger>
         </TabsList>
@@ -171,14 +171,14 @@ export default async function SolutionEvaluationPage({
             {/* Sidebar: Timeline + Community Score */}
             <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
               {/* Score Evolution Timeline */}
-              <Card className="border-zinc-900 bg-zinc-950/80 shadow-2xl relative overflow-hidden">
+              <Card className="border-border bg-card/80 dark:bg-zinc-950/80 shadow-xs hover:shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-violet-600/5 rounded-full filter blur-2xl pointer-events-none" />
-                <CardHeader className="pb-4 border-b border-zinc-900">
-                  <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-violet-400" />
+                <CardHeader className="pb-4 border-b border-border">
+                  <CardTitle className="font-display text-base font-bold flex items-center gap-2 text-foreground">
+                    <Activity className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                     Idea Evolution
                   </CardTitle>
-                  <CardDescription className="text-zinc-500 text-xs">
+                  <CardDescription className="text-muted-foreground text-xs">
                     Track how your score changed across every re-evaluation.
                   </CardDescription>
                 </CardHeader>

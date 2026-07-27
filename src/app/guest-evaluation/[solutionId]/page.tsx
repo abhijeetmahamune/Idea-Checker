@@ -76,20 +76,20 @@ export default async function GuestEvaluationPage({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-200">
       {/* Navbar */}
       <Navbar />
 
       {/* Main Container */}
       <main className="flex-grow py-8 relative overflow-hidden">
         {/* Background Gradients */}
-        <div className="absolute top-[20%] left-[-10%] w-[30%] h-[30%] rounded-full bg-violet-900/5 filter blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[30%] h-[30%] rounded-full bg-indigo-900/5 filter blur-[100px] pointer-events-none" />
+        <div className="absolute top-[20%] left-[-10%] w-[30%] h-[30%] rounded-full bg-violet-500/5 dark:bg-violet-900/5 filter blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[30%] h-[30%] rounded-full bg-indigo-500/5 dark:bg-indigo-900/5 filter blur-[100px] pointer-events-none" />
 
         <div className="container mx-auto">
           {/* Header breadcrumb or tag */}
-          <div className="max-w-5xl mx-auto px-4 mb-6 text-sm text-zinc-500 font-medium">
-            <span>Guest Evaluation Report</span> &rarr; <span className="text-zinc-300">{problem.title}</span>
+          <div className="max-w-5xl mx-auto px-4 mb-6 text-sm text-muted-foreground font-medium">
+            <span>Guest Evaluation Report</span> &rarr; <span className="text-foreground font-semibold">{problem.title}</span>
           </div>
 
           <Tabs defaultValue="score" className="max-w-5xl mx-auto px-4">

@@ -20,9 +20,9 @@ interface PivotSuggestionsProps {
 }
 
 const PIVOT_COLORS = [
-  { border: 'border-violet-500/20', bg: 'bg-violet-500/5', badge: 'bg-violet-500/10 text-violet-300 border-violet-500/20', dot: 'bg-violet-500' },
-  { border: 'border-indigo-500/20', bg: 'bg-indigo-500/5', badge: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20', dot: 'bg-indigo-500' },
-  { border: 'border-cyan-500/20', bg: 'bg-cyan-500/5', badge: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20', dot: 'bg-cyan-500' },
+  { border: 'border-violet-500/30', bg: 'bg-violet-500/10 dark:bg-violet-500/5', badge: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20', dot: 'bg-violet-500' },
+  { border: 'border-indigo-500/30', bg: 'bg-indigo-500/10 dark:bg-indigo-500/5', badge: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20', dot: 'bg-indigo-500' },
+  { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10 dark:bg-cyan-500/5', badge: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20', dot: 'bg-cyan-500' },
 ];
 
 export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSuggestionsProps) {
@@ -31,18 +31,18 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-        <div className="p-2 rounded-lg bg-amber-500/10 flex-shrink-0">
-          <TrendingUp className="h-4 w-4 text-amber-400" />
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/5">
+        <div className="p-2 rounded-lg bg-amber-500/15 flex-shrink-0">
+          <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
         </div>
         <div>
-          <p className="text-sm font-bold text-amber-400 flex items-center gap-2">
+          <p className="font-display text-sm font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2">
             Pivot Suggestions
-            <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 text-[10px] font-mono">
+            <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 text-[10px] font-mono">
               Score: {currentScore}/100
             </Badge>
           </p>
-          <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             Your idea scored below 60. Here are 3 strategic pivots that could dramatically improve its viability. Each is a different direction — not just a tweak.
           </p>
         </div>
@@ -57,7 +57,7 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
           return (
             <Card
               key={i}
-              className={`border ${color.border} ${color.bg} overflow-hidden transition-all duration-300`}
+              className={`border ${color.border} ${color.bg} overflow-hidden transition-all duration-300 shadow-xs`}
             >
               <div className="p-4 space-y-3">
                 {/* Pivot header */}
@@ -65,7 +65,7 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
                   <div className="flex items-center gap-2.5">
                     <div className={`h-2 w-2 rounded-full ${color.dot} flex-shrink-0 mt-0.5`} />
                     <div>
-                      <p className="text-sm font-bold text-white">{pivot.title}</p>
+                      <p className="font-display text-sm font-bold text-foreground">{pivot.title}</p>
                       <Badge className={`${color.badge} text-[10px] font-semibold mt-0.5`}>
                         {pivot.estimatedScoreLift} potential
                       </Badge>
@@ -74,7 +74,7 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
 
                   <button
                     onClick={() => setExpanded(isExpanded ? null : i)}
-                    className="text-zinc-500 hover:text-zinc-300 transition-colors flex-shrink-0 mt-0.5"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5 cursor-pointer"
                     aria-label={isExpanded ? 'Collapse' : 'Expand'}
                   >
                     {isExpanded ? (
@@ -86,18 +86,18 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
                 </div>
 
                 {/* Description (always visible) */}
-                <p className="text-xs text-zinc-300 leading-relaxed">{pivot.description}</p>
+                <p className="text-xs text-foreground leading-relaxed">{pivot.description}</p>
 
                 {/* Expanded: Rationale */}
                 {isExpanded && (
-                  <div className="pt-2 border-t border-white/5 space-y-3 animate-in fade-in duration-200">
+                  <div className="pt-2 border-t border-border space-y-3 animate-in fade-in duration-200">
                     <div className="flex items-start gap-2">
-                      <Lightbulb className="h-3.5 w-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <Lightbulb className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                           Why This Could Work
                         </p>
-                        <p className="text-xs text-zinc-300 leading-relaxed">{pivot.rationale}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{pivot.rationale}</p>
                       </div>
                     </div>
 
@@ -106,7 +106,7 @@ export function PivotSuggestions({ pivots, currentScore, onTryPivot }: PivotSugg
                         type="button"
                         size="sm"
                         onClick={() => onTryPivot(pivot.description)}
-                        className="w-full h-8 text-xs bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white gap-1.5"
+                        className="w-full h-8 text-xs bg-card hover:bg-accent border border-border text-foreground gap-1.5 cursor-pointer"
                       >
                         <ArrowUpRight className="h-3.5 w-3.5" />
                         Try This Pivot

@@ -84,7 +84,7 @@ export function ScoreCoachingCard({
   if (overallScore >= 85 || gainPoints <= 2) return null;
 
   return (
-    <div className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-950/30 via-zinc-950/60 to-indigo-950/20 p-6 relative overflow-hidden animate-fade-slide-up">
+    <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-card to-indigo-500/10 p-6 relative overflow-hidden animate-fade-slide-up shadow-sm">
       {/* Background glow */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-violet-600/5 rounded-full filter blur-3xl pointer-events-none" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
@@ -93,14 +93,14 @@ export function ScoreCoachingCard({
       <div className="flex items-start justify-between gap-4 mb-5 relative">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center flex-shrink-0">
-            <Target className="h-5 w-5 text-violet-400" />
+            <Target className="h-5 w-5 text-violet-600 dark:text-violet-400" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
               Score Improvement Guide
-              <TrendingUp className="h-4 w-4 text-violet-400" />
+              <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Fix these areas to unlock a stronger evaluation</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Fix these areas to unlock a stronger evaluation</p>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export function ScoreCoachingCard({
             <ArrowUpRight className="h-3.5 w-3.5" />
             {overallScore} → {potentialOverall}
           </div>
-          <p className="text-[10px] text-zinc-600 mt-1 font-mono">+{gainPoints} pts potential</p>
+          <p className="text-[10px] text-muted-foreground mt-1 font-mono">+{gainPoints} pts potential</p>
         </div>
       </div>
 
@@ -124,44 +124,44 @@ export function ScoreCoachingCard({
           return (
             <div
               key={dim.key}
-              className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3 hover:border-zinc-700 transition-colors animate-fade-slide-up"
+              className="rounded-xl border border-border bg-card/90 dark:bg-zinc-950/70 p-4 space-y-3 hover:border-primary/40 transition-colors shadow-xs animate-fade-slide-up"
               style={{ animationDelay: `${i * 100 + 150}ms` }}
             >
               {/* Dim header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <DimIcon className={`h-4 w-4 ${dim.textColor}`} />
-                  <span className="text-sm font-bold text-white">{dim.name}</span>
+                  <span className="text-sm font-bold text-foreground">{dim.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-black font-mono ${
-                    dim.score <= 4 ? 'text-rose-400' : dim.score <= 6 ? 'text-amber-400' : 'text-emerald-400'
+                    dim.score <= 4 ? 'text-rose-600 dark:text-rose-400' : dim.score <= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
                   }`}>{dim.score}/10</span>
-                  <span className="text-[9px] text-zinc-600 bg-zinc-900 border border-zinc-800 rounded-full px-2 py-0.5 font-semibold">
+                  <span className="text-[9px] text-muted-foreground bg-muted border border-border rounded-full px-2 py-0.5 font-semibold">
                     {dim.score <= 4 ? 'Critical' : 'Weak'}
                   </span>
                 </div>
               </div>
 
               {/* Score bar */}
-              <div className="relative h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div className="relative h-1.5 rounded-full bg-secondary overflow-hidden">
                 <div
                   className={`h-full rounded-full ${dim.color} transition-all duration-1000`}
                   style={{ width: `${(dim.score / 10) * 100}%` }}
                 />
                 {/* Target marker */}
                 <div
-                  className="absolute top-0 h-full w-0.5 bg-white/30 rounded-full"
+                  className="absolute top-0 h-full w-0.5 bg-foreground/30 rounded-full"
                   style={{ left: `${(TARGET_SCORE / 10) * 100}%` }}
                 />
               </div>
 
               {/* Coaching tip */}
               <div className="space-y-1.5">
-                <p className="text-[11px] text-zinc-500 italic leading-relaxed">{coaching.tip}</p>
+                <p className="text-[11px] text-muted-foreground italic leading-relaxed">{coaching.tip}</p>
                 <div className="flex items-start gap-1.5">
                   <ArrowUpRight className={`h-3 w-3 ${dim.textColor} flex-shrink-0 mt-0.5`} />
-                  <p className="text-[11px] text-zinc-300 leading-relaxed">{coaching.action}</p>
+                  <p className="text-[11px] text-foreground leading-relaxed">{coaching.action}</p>
                 </div>
               </div>
 
@@ -176,7 +176,7 @@ export function ScoreCoachingCard({
       </div>
 
       {/* Footer note */}
-      <p className="text-[10px] text-zinc-700 text-center mt-4 relative">
+      <p className="text-[10px] text-muted-foreground/80 text-center mt-4 relative">
         Potential score assumes focus areas improve to 7.5/10 · Resubmit with updated solution to verify
       </p>
     </div>

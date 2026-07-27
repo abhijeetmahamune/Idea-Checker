@@ -53,26 +53,26 @@ export function CommunityScoreWidget({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 space-y-4">
+    <div className="rounded-xl border border-border bg-card/80 dark:bg-zinc-950/60 p-4 space-y-4 shadow-xs">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Star className="h-3.5 w-3.5 text-amber-400" />
+          <div className="h-7 w-7 rounded-lg bg-amber-500/15 flex items-center justify-center">
+            <Star className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
           </div>
-          <span className="text-sm font-bold text-white">Community Score</span>
+          <span className="font-display text-sm font-bold text-foreground">Community Score</span>
         </div>
 
         {total > 0 ? (
           <div className="flex items-center gap-1.5">
-            <span className="text-lg font-black text-amber-400 font-mono">{average.toFixed(1)}</span>
-            <span className="text-xs text-zinc-500">/ 5</span>
-            <span className="text-[10px] text-zinc-600 bg-zinc-900 border border-zinc-800 rounded-full px-2 py-0.5 font-mono">
+            <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">{average.toFixed(1)}</span>
+            <span className="text-xs text-muted-foreground">/ 5</span>
+            <span className="text-[10px] text-muted-foreground bg-muted border border-border rounded-full px-2 py-0.5 font-mono">
               {total} {total === 1 ? 'rating' : 'ratings'}
             </span>
           </div>
         ) : (
-          <span className="text-[11px] text-zinc-600 italic">No ratings yet</span>
+          <span className="text-[11px] text-muted-foreground italic">No ratings yet</span>
         )}
       </div>
 
@@ -87,34 +87,34 @@ export function CommunityScoreWidget({
                 key={star}
                 className={cn(
                   'h-4 w-4 transition-colors',
-                  filled ? 'fill-amber-400 text-amber-400' : partial ? 'fill-amber-400/40 text-amber-400/40' : 'text-zinc-700'
+                  filled ? 'fill-amber-400 text-amber-500' : partial ? 'fill-amber-400/40 text-amber-500/40' : 'text-muted-foreground/40'
                 )}
               />
             );
           })}
-          <span className="text-xs text-zinc-500 ml-1">community average</span>
+          <span className="text-xs text-muted-foreground ml-1">community average</span>
         </div>
       )}
 
       {/* Divider */}
-      <div className="border-t border-zinc-800/60" />
+      <div className="border-t border-border" />
 
       {/* Rating interaction area */}
       {isGuest ? (
         <div className="text-center space-y-2">
-          <p className="text-xs text-zinc-500">Sign in to rate this solution</p>
+          <p className="text-xs text-muted-foreground">Sign in to rate this solution</p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 border border-violet-500/20 hover:border-violet-500/40 px-3 py-1.5 rounded-lg transition-all"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 border border-violet-500/30 hover:bg-violet-500/10 px-3 py-1.5 rounded-lg transition-all"
           >
             Sign In to Rate
           </Link>
         </div>
       ) : isOwner ? (
-        <p className="text-xs text-zinc-600 text-center italic">You can't rate your own solution</p>
+        <p className="text-xs text-muted-foreground text-center italic">You can&apos;t rate your own solution</p>
       ) : (
         <div className="space-y-2">
-          <p className="text-[11px] text-zinc-500 text-center">
+          <p className="text-[11px] text-muted-foreground text-center">
             {userRating > 0 ? `Your rating: ${userRating}/5 — click to update` : 'Rate this solution'}
           </p>
           <div className="flex items-center justify-center gap-1.5">
@@ -135,13 +135,13 @@ export function CommunityScoreWidget({
                   className={cn(
                     'h-6 w-6 transition-colors duration-100',
                     star <= displayRating
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-zinc-700 hover:text-amber-400/50'
+                      ? 'fill-amber-400 text-amber-500'
+                      : 'text-muted-foreground/40 hover:text-amber-500/50'
                   )}
                 />
               </button>
             ))}
-            {isPending && <Loader2 className="h-4 w-4 animate-spin text-zinc-500 ml-1" />}
+            {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground ml-1" />}
           </div>
         </div>
       )}

@@ -69,9 +69,9 @@ export function MergeSolutionsDialog({ problemId, solutions }: MergeSolutionsDia
         variant="outline"
         size="sm"
         onClick={() => setMergeMode(true)}
-        className="gap-1.5 text-xs border-zinc-800 text-zinc-400 hover:text-white hover:border-violet-500/40 hover:bg-violet-500/5"
+        className="gap-1.5 text-xs border-border text-muted-foreground hover:text-foreground hover:border-violet-500/40 hover:bg-violet-500/10 cursor-pointer"
       >
-        <GitMerge className="h-3.5 w-3.5" />
+        <GitMerge className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
         Merge Solutions
       </Button>
     );
@@ -80,20 +80,20 @@ export function MergeSolutionsDialog({ problemId, solutions }: MergeSolutionsDia
   return (
     <div className="w-full space-y-4">
       {/* Mode header */}
-      <div className="flex items-center justify-between p-3 rounded-xl bg-violet-500/8 border border-violet-500/20">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-violet-500/10 border border-violet-500/30">
         <div className="flex items-center gap-2">
-          <GitMerge className="h-4 w-4 text-violet-400" />
-          <span className="text-sm font-bold text-violet-300">Merge Mode</span>
-          <span className="text-xs text-zinc-500">Select 2–4 solutions to combine with AI</span>
+          <GitMerge className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+          <span className="text-sm font-bold text-violet-600 dark:text-violet-300 font-display">Merge Mode</span>
+          <span className="text-xs text-muted-foreground">Select 2–4 solutions to combine with AI</span>
         </div>
         <div className="flex items-center gap-2">
           <Badge className={cn(
             'font-mono text-xs',
-            selected.size >= 2 ? 'bg-violet-500/15 text-violet-300 border-violet-500/30' : 'bg-zinc-900 text-zinc-500 border-zinc-800'
+            selected.size >= 2 ? 'bg-violet-500/15 text-violet-600 dark:text-violet-300 border-violet-500/30' : 'bg-muted text-muted-foreground border-border'
           )}>
             {selected.size}/4 selected
           </Badge>
-          <button onClick={() => { setMergeMode(false); setSelected(new Set()); }} className="text-zinc-500 hover:text-white p-1">
+          <button onClick={() => { setMergeMode(false); setSelected(new Set()); }} className="text-muted-foreground hover:text-foreground p-1 cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -110,22 +110,22 @@ export function MergeSolutionsDialog({ problemId, solutions }: MergeSolutionsDia
               onClick={() => !isDisabled && toggleSelect(s.id)}
               disabled={isDisabled}
               className={cn(
-                'w-full text-left flex items-start gap-3 p-3 rounded-xl border transition-all',
-                isSelected ? 'border-violet-500/40 bg-violet-500/8' : 'border-zinc-800 bg-zinc-950/40',
+                'w-full text-left flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer',
+                isSelected ? 'border-violet-500/40 bg-violet-500/10 dark:bg-violet-500/8' : 'border-border bg-card/60 hover:border-primary/40',
                 isDisabled && 'opacity-40 cursor-not-allowed'
               )}
             >
               <div className="flex-shrink-0 mt-0.5">
                 {isSelected
-                  ? <CheckSquare className="h-4 w-4 text-violet-400" />
-                  : <Square className="h-4 w-4 text-zinc-600" />}
+                  ? <CheckSquare className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                  : <Square className="h-4 w-4 text-muted-foreground" />}
               </div>
               <div className="flex-grow min-w-0 space-y-1">
-                <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">{s.content}</p>
+                <p className="text-xs text-foreground line-clamp-2 leading-relaxed">{s.content}</p>
                 {s.score !== null && (
                   <span className={cn(
                     'text-[10px] font-mono font-bold',
-                    s.score >= 70 ? 'text-emerald-400' : s.score >= 50 ? 'text-amber-400' : 'text-rose-400'
+                    s.score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : s.score >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                   )}>
                     Score: {s.score}
                   </span>

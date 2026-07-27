@@ -76,9 +76,9 @@ function Sparkline({ scores }: { scores: number[] }) {
 
 // ── Score badge ────────────────────────────────────────────────────────────────
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 70 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-    : score >= 50 ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-    : 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+  const color = score >= 70 ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+    : score >= 50 ? 'text-amber-700 dark:text-amber-400 bg-amber-500/10 border-amber-500/20'
+    : 'text-rose-700 dark:text-rose-400 bg-rose-500/10 border-rose-500/20';
   return (
     <span className={cn('text-sm font-black font-mono px-2.5 py-0.5 rounded-lg border', color)}>
       {score}
@@ -88,9 +88,9 @@ function ScoreBadge({ score }: { score: number }) {
 
 // ── Delta chip ─────────────────────────────────────────────────────────────────
 function DeltaChip({ delta }: { delta: number | null }) {
-  if (delta === null) return <span className="text-[10px] text-zinc-600 font-mono">baseline</span>;
+  if (delta === null) return <span className="text-[10px] text-muted-foreground font-mono">baseline</span>;
   if (delta === 0) return (
-    <span className="flex items-center gap-0.5 text-[10px] text-zinc-500 font-mono">
+    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground font-mono">
       <Minus className="h-2.5 w-2.5" />0
     </span>
   );
@@ -98,7 +98,7 @@ function DeltaChip({ delta }: { delta: number | null }) {
   return (
     <span className={cn(
       'flex items-center gap-0.5 text-[10px] font-mono font-bold',
-      up ? 'text-emerald-400' : 'text-rose-400'
+      up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
     )}>
       {up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
       {up ? '+' : ''}{delta}
@@ -120,13 +120,13 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
     <div className="space-y-4">
       {/* Sparkline header */}
       {history.length >= 2 && (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 space-y-3">
+        <div className="rounded-xl border border-border bg-card/60 dark:bg-zinc-950/60 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-400">Score Trend</span>
+            <span className="text-xs font-bold text-muted-foreground">Score Trend</span>
             <DeltaChip delta={totalDelta} />
           </div>
           <Sparkline scores={scores} />
-          <div className="flex justify-between text-[10px] text-zinc-600 font-mono">
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
             <span>Earliest</span>
             <span>{history.length} evaluations</span>
             <span>Latest</span>
@@ -138,7 +138,7 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
       <div className="relative">
         {/* Vertical line */}
         {history.length > 1 && (
-          <div className="absolute left-[19px] top-6 bottom-6 w-px bg-zinc-800" />
+          <div className="absolute left-[19px] top-6 bottom-6 w-px bg-border" />
         )}
 
         <div className="space-y-2">
@@ -154,16 +154,16 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
                 href={`?evalId=${ev.id}${tab ? `&tab=${tab}` : ''}`}
                 scroll={false}
                 className={cn(
-                  'w-full flex items-start gap-3 p-3 rounded-xl border text-left transition-all duration-150 group',
+                  'w-full flex items-start gap-3 p-3 rounded-xl border text-left transition-all duration-150 group cursor-pointer',
                   isActive
-                    ? 'border-violet-500/40 bg-violet-500/8'
-                    : 'border-zinc-800/60 bg-zinc-950/30 hover:border-zinc-700 hover:bg-zinc-900/40'
+                    ? 'border-violet-500/40 bg-violet-500/10 dark:bg-violet-500/8'
+                    : 'border-border bg-card/50 hover:border-primary/40 hover:bg-card'
                 )}
               >
                 {/* Dot on timeline */}
                 <div className={cn(
                   'h-5 w-5 rounded-full border-2 flex-shrink-0 mt-0.5 z-10',
-                  isActive ? 'border-violet-500 bg-violet-500' : 'border-zinc-700 bg-zinc-900 group-hover:border-zinc-500'
+                  isActive ? 'border-violet-500 bg-violet-500' : 'border-border bg-muted group-hover:border-primary/50'
                 )} />
 
                 <div className="flex-grow min-w-0 space-y-1">
@@ -172,13 +172,13 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
                       <ScoreBadge score={ev.overallScore} />
                       <DeltaChip delta={delta} />
                       {i === 0 && (
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/20">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/20">
                           Latest
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-zinc-600">
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <Calendar className="h-2.5 w-2.5" />
                     <span className="font-mono">
                       {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -187,7 +187,7 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
                     </span>
                   </div>
                   {ev.feedback?.summary && (
-                    <p className="text-[11px] text-zinc-500 leading-snug line-clamp-2 mt-1">
+                    <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2 mt-1">
                       {ev.feedback.summary}
                     </p>
                   )}

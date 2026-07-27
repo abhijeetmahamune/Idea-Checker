@@ -47,76 +47,76 @@ export function ProfileForm({ user }: ProfileFormProps) {
   });
 
   return (
-    <Card className="bg-zinc-950/60 backdrop-blur-md border-border">
+    <Card className="bg-card/80 dark:bg-zinc-950/60 backdrop-blur-md border-border shadow-xs hover:shadow-md">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5 text-violet-500" />
+        <CardTitle className="font-display text-lg font-bold flex items-center gap-2 text-foreground">
+          <User className="h-5 w-5 text-violet-600 dark:text-violet-400" />
           Profile Information
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0">
-            <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
+            <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
           </div>
           <div className="flex-grow space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" className="text-foreground">Name</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-background/50 border-border focus-visible:ring-violet-500/50"
+                  className="bg-background border-border text-foreground focus-visible:ring-violet-500/50"
                   placeholder="Your Name"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <div className="relative">
                   <Input
                     id="email"
                     value={user.email}
                     readOnly
-                    className="bg-background/50 border-border text-zinc-500 pl-9"
+                    className="bg-muted border-border text-muted-foreground pl-9"
                   />
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="text-foreground">Bio</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value.slice(0, 280))}
-                className="bg-background/50 border-border focus-visible:ring-violet-500/50 resize-none"
+                className="bg-background border-border text-foreground focus-visible:ring-violet-500/50 resize-none"
                 placeholder="Tell us about yourself"
                 rows={3}
               />
-              <div className="text-xs text-zinc-500 text-right">
+              <div className="text-xs text-muted-foreground text-right font-mono">
                 {bio.length} / 280
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location" className="text-foreground">Location</Label>
                 <div className="relative">
                   <Input
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="bg-background/50 border-border focus-visible:ring-violet-500/50 pl-9"
+                    className="bg-background border-border text-foreground focus-visible:ring-violet-500/50 pl-9"
                     placeholder="City, Country"
                   />
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
               </div>
               
               <div className="space-y-2 flex flex-col justify-end pb-2">
-                <span className="text-sm text-zinc-400">
+                <span className="text-sm text-muted-foreground">
                   Member since {memberSince}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <Button
             onClick={handleSave}
             disabled={isPending}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white"
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold cursor-pointer"
           >
             {isPending ? 'Saving...' : 'Save Changes'}
           </Button>

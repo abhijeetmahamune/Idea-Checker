@@ -186,13 +186,13 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
   };
 
   return (
-    <Card className="border-zinc-900 bg-zinc-950/80 shadow-xl relative overflow-hidden">
-      <CardHeader className="pb-4 border-b border-zinc-900">
-        <CardTitle className="text-lg font-bold flex items-center gap-1.5">
-          <Plus className="h-5 w-5 text-violet-400" />
+    <Card className="border-border/80 dark:border-zinc-900 bg-card/80 dark:bg-zinc-950/80 shadow-xs hover:shadow-md relative overflow-hidden">
+      <CardHeader className="pb-4 border-b border-border">
+        <CardTitle className="font-display text-lg font-bold flex items-center gap-1.5 text-foreground">
+          <Plus className="h-5 w-5 text-violet-600 dark:text-violet-400" />
           Propose Solution
         </CardTitle>
-        <CardDescription className="text-zinc-500">
+        <CardDescription className="text-muted-foreground">
           Submit a new proposal to evaluate it against this problem context.
         </CardDescription>
       </CardHeader>
@@ -200,10 +200,10 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
       <CardContent className="pt-5">
         {loading ? (
           <div className="py-10 flex flex-col items-center justify-center space-y-4 text-center">
-            <BrainCircuit className="h-8 w-8 text-violet-400 animate-pulse" />
+            <BrainCircuit className="h-8 w-8 text-violet-600 dark:text-violet-400 animate-pulse" />
             <div className="space-y-2 w-full max-w-sm">
-              <Progress value={progress} className="h-1.5 bg-zinc-900" />
-              <div className="flex justify-between text-[11px] text-zinc-500 font-mono">
+              <Progress value={progress} className="h-1.5 bg-muted" />
+              <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
                 <span>{loadingStep}</span>
                 <span>{Math.round(progress)}%</span>
               </div>
@@ -212,14 +212,14 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
         ) : (
           <div className="space-y-4">
             {/* Mode Toggle */}
-            <div className="flex gap-1.5 p-1 bg-zinc-900 rounded-lg border border-zinc-800">
+            <div className="flex gap-1.5 p-1 bg-muted/60 rounded-lg border border-border">
               <button
                 type="button"
                 onClick={() => setMode('manual')}
-                className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-150 ${
+                className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-150 cursor-pointer ${
                   mode === 'manual'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <PenLine className="h-3.5 w-3.5" />
@@ -228,10 +228,10 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
               <button
                 type="button"
                 onClick={() => setMode('guided')}
-                className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-150 ${
+                className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md transition-all duration-150 cursor-pointer ${
                   mode === 'guided'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <ListChecks className="h-3.5 w-3.5" />
@@ -250,9 +250,9 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="content" className="text-sm font-semibold flex items-center gap-1">
+                    <Label htmlFor="content" className="text-sm font-semibold flex items-center gap-1 text-foreground">
                       Solution Description
-                      <span className="text-rose-500">*</span>
+                      <span className="text-destructive">*</span>
                     </Label>
 
                     {/* AI Generate button */}
@@ -262,7 +262,7 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
                       size="sm"
                       onClick={handleGenerate}
                       disabled={generating || (!problemDescription && !problemTitle)}
-                      className="h-7 px-2.5 text-[11px] text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 gap-1 font-semibold border border-violet-500/20 hover:border-violet-500/40 transition-all"
+                      className="h-7 px-2.5 text-[11px] text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 gap-1 font-semibold border border-violet-500/20 hover:border-violet-500/40 transition-all cursor-pointer"
                     >
                       {generating ? (
                         <>
@@ -285,11 +285,11 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
                     onChange={(e) => setContent(e.target.value)}
                     required
                     rows={5}
-                    className="bg-background/50 border-border focus-visible:ring-violet-500/50 resize-y"
+                    className="bg-background border-border text-foreground focus-visible:ring-violet-500/50 resize-y"
                   />
 
                   {content.length > 0 && (
-                    <p className="text-[10px] text-zinc-500 font-mono text-right">
+                    <p className="text-[10px] text-muted-foreground font-mono text-right">
                       {content.length} chars
                     </p>
                   )}
@@ -297,7 +297,7 @@ export function SolutionForm({ problemId, problemDescription, problemTitle }: So
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold transition-all flex items-center justify-center gap-2 group"
+                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold transition-all flex items-center justify-center gap-2 group cursor-pointer"
                 >
                   <Rocket className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   Evaluate Proposal

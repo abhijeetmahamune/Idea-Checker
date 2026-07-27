@@ -197,8 +197,8 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
     return (
       <div className={`space-y-5 transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}>
         <div className="space-y-1">
-          <p className="text-base font-bold text-white">What type of idea is this?</p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-base font-bold text-foreground">What type of idea is this?</p>
+          <p className="text-xs text-muted-foreground">
             We'll ask you targeted questions and build a structured evaluation from your answers.
           </p>
         </div>
@@ -207,24 +207,24 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
             <button
               key={domain.id}
               onClick={() => handleDomainSelect(domain.id)}
-              className="w-full text-left p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:border-violet-500/50 hover:bg-zinc-900 transition-all duration-150 group"
+              className="w-full text-left p-3.5 rounded-xl border border-border/80 dark:border-zinc-800 bg-card/80 dark:bg-zinc-900/50 hover:border-violet-500/50 hover:bg-card dark:hover:bg-zinc-900 transition-all duration-150 group cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl flex-shrink-0">{domain.icon}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white group-hover:text-violet-300 transition-colors truncate">
+                  <p className="text-sm font-semibold text-foreground group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors truncate">
                     {domain.label}
                   </p>
-                  <p className="text-[11px] text-zinc-500 leading-tight truncate">{domain.description}</p>
+                  <p className="text-[11px] text-muted-foreground leading-tight truncate">{domain.description}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-zinc-600 group-hover:text-violet-400 ml-auto flex-shrink-0 transition-colors" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400 ml-auto flex-shrink-0 transition-colors" />
               </div>
             </button>
           ))}
         </div>
         <button
           onClick={onCancel}
-          className="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors py-2"
+          className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-2 cursor-pointer"
         >
           ← Go back to Manual mode
         </button>
@@ -246,7 +246,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
         canProceed={problemTitle.trim().length >= 5}
         isLast={false}
       >
-        <p className="text-sm font-semibold text-white mb-3">What's the name of your idea or startup?</p>
+        <p className="text-sm font-semibold text-foreground mb-3">What's the name of your idea or startup?</p>
         <input
           type="text"
           value={problemTitle}
@@ -254,7 +254,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
           onKeyDown={(e) => e.key === 'Enter' && handleNext()}
           placeholder="e.g. AI-powered legal document simplifier"
           autoFocus
-          className="w-full text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500/60 text-white placeholder-zinc-600"
+          className="w-full text-sm bg-background border border-border rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500 text-foreground placeholder:text-muted-foreground/60"
         />
       </StepShell>
     );
@@ -274,7 +274,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
         canProceed={problemDesc.trim().length >= 20}
         isLast={false}
       >
-        <p className="text-sm font-semibold text-white mb-3">
+        <p className="text-sm font-semibold text-foreground mb-3">
           What problem are you solving? Who experiences it and why does it matter?
         </p>
         <textarea
@@ -283,7 +283,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
           placeholder="Describe the core pain point. Who suffers from it? What happens today without your solution? (min 20 characters)"
           rows={4}
           autoFocus
-          className="w-full text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500/60 resize-none text-white placeholder-zinc-600 leading-relaxed"
+          className="w-full text-sm bg-background border border-border rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none text-foreground placeholder:text-muted-foreground/60 leading-relaxed"
         />
       </StepShell>
     );
@@ -308,7 +308,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
         canProceed={canProceed}
         isLast={isLast}
       >
-        <p className="text-sm font-semibold text-white mb-3 leading-snug">{q.question}</p>
+        <p className="text-sm font-semibold text-foreground mb-3 leading-snug">{q.question}</p>
 
         {(q.type === 'text' || q.type === 'textarea') && (
           q.type === 'textarea' ? (
@@ -318,7 +318,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
               placeholder={q.placeholder}
               rows={3}
               autoFocus
-              className="w-full text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500/60 resize-none text-white placeholder-zinc-600 leading-relaxed"
+              className="w-full text-sm bg-background border border-border rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none text-foreground placeholder:text-muted-foreground/60 leading-relaxed"
             />
           ) : (
             <input
@@ -328,7 +328,7 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
               onKeyDown={(e) => e.key === 'Enter' && canProceed && handleNext()}
               placeholder={q.placeholder}
               autoFocus
-              className="w-full text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500/60 text-white placeholder-zinc-600"
+              className="w-full text-sm bg-background border border-border rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-violet-500 text-foreground placeholder:text-muted-foreground/60"
             />
           )
         )}
@@ -340,15 +340,15 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
                 key={opt.value}
                 type="button"
                 onClick={() => setAnswers((p) => ({ ...p, [q.id]: opt.value }))}
-                className={`w-full text-left text-sm p-3.5 rounded-xl border transition-all duration-150 ${
+                className={`w-full text-left text-sm p-3.5 rounded-xl border transition-all duration-150 cursor-pointer ${
                   answer === opt.value
-                    ? 'border-violet-500/60 bg-violet-500/10 text-white'
-                    : 'border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:border-zinc-700 hover:text-white'
+                    ? 'border-violet-500/60 bg-violet-500/10 text-foreground font-semibold'
+                    : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <div className={`h-3.5 w-3.5 rounded-full border flex-shrink-0 transition-colors ${
-                    answer === opt.value ? 'border-violet-400 bg-violet-500' : 'border-zinc-600'
+                    answer === opt.value ? 'border-violet-500 bg-violet-600' : 'border-border'
                   }`} />
                   {opt.label}
                 </div>
@@ -364,10 +364,10 @@ export function GuidedEvalForm({ onCancel }: GuidedEvalFormProps) {
                 key={opt.value}
                 type="button"
                 onClick={() => setAnswers((p) => ({ ...p, [q.id]: opt.value }))}
-                className={`text-sm p-3.5 rounded-xl border font-medium transition-all duration-150 ${
+                className={`text-sm p-3.5 rounded-xl border font-medium transition-all duration-150 cursor-pointer ${
                   answer === opt.value
-                    ? 'border-violet-500/60 bg-violet-500/10 text-white'
-                    : 'border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:border-zinc-700 hover:text-white'
+                    ? 'border-violet-500/60 bg-violet-500/10 text-foreground font-semibold'
+                    : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'
                 }`}
               >
                 {opt.label}
@@ -415,13 +415,13 @@ function StepShell({
       {/* Domain badge + progress */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 rounded-full px-2.5 py-1">
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-violet-600 dark:text-violet-300 bg-violet-500/10 border border-violet-500/20 rounded-full px-2.5 py-1">
             <span>{domain.icon}</span>
             <span className="truncate max-w-[160px]">{stepLabel}</span>
           </div>
-          <span className="text-[10px] text-zinc-500 font-mono">{stepNum}/{totalSteps}</span>
+          <span className="text-[10px] text-muted-foreground font-mono">{stepNum}/{totalSteps}</span>
         </div>
-        <div className="w-full bg-zinc-900 rounded-full h-0.5">
+        <div className="w-full bg-secondary rounded-full h-0.5">
           <div
             className="bg-gradient-to-r from-violet-500 to-indigo-500 h-0.5 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${pct}%` }}
@@ -438,7 +438,7 @@ function StepShell({
           type="button"
           variant="outline"
           onClick={onBack}
-          className="border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 text-xs h-10 px-4 flex-shrink-0"
+          className="border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs h-10 px-4 flex-shrink-0 cursor-pointer"
         >
           <ArrowLeft className="h-3.5 w-3.5 mr-1" />
           Back
@@ -447,7 +447,7 @@ function StepShell({
           type="button"
           onClick={onNext}
           disabled={!canProceed}
-          className={`flex-1 h-10 text-sm font-semibold gap-1.5 ${
+          className={`flex-1 h-10 text-sm font-semibold gap-1.5 cursor-pointer ${
             isLast
               ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/20'
               : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white'

@@ -82,23 +82,23 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
   const inviteLink = `/workspace/join/${workspace.inviteCode}`;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-200">
       {/* Header */}
-      <div className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur sticky top-0 z-20 px-4 py-3">
+      <div className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-20 px-4 py-3">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Link href={`/problems/${workspace.problemId}`} className="text-zinc-500 hover:text-white transition-colors flex-shrink-0">
+            <Link href={`/problems/${workspace.problemId}`} className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-violet-400 flex-shrink-0" />
-                <h1 className="text-sm font-black text-white truncate">{workspace.name}</h1>
+                <Users className="h-4 w-4 text-violet-600 dark:text-violet-400 flex-shrink-0" />
+                <h1 className="font-display text-sm font-black text-foreground truncate">{workspace.name}</h1>
                 <Badge className={`text-[9px] flex-shrink-0 ${ROLE_CONFIG[userRole]?.color}`}>
                   {userRole}
                 </Badge>
               </div>
-              <p className="text-[10px] text-zinc-600 truncate">{problem[0].title}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{problem[0].title}</p>
             </div>
           </div>
 
@@ -107,12 +107,12 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
             <div className="hidden sm:flex items-center -space-x-1.5">
               {members.slice(0, 5).map(m => (
                 <div key={m.id} title={m.name || m.email || 'Member'}
-                  className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[9px] font-bold text-zinc-400 ring-1 ring-black">
+                  className="h-6 w-6 rounded-full bg-muted border border-border flex items-center justify-center text-[9px] font-bold text-muted-foreground ring-1 ring-border">
                   {(m.name || m.email || '?')[0].toUpperCase()}
                 </div>
               ))}
               {members.length > 5 && (
-                <div className="h-6 w-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] text-zinc-500">
+                <div className="h-6 w-6 rounded-full bg-muted border border-border flex items-center justify-center text-[9px] text-muted-foreground">
                   +{members.length - 5}
                 </div>
               )}
@@ -129,23 +129,23 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
       {/* Main layout — two panels */}
       <div className="flex-1 flex overflow-hidden max-w-[1600px] mx-auto w-full">
         {/* LEFT — Problem board */}
-        <div className="w-[55%] flex flex-col border-r border-zinc-900 overflow-y-auto">
+        <div className="w-[55%] flex flex-col border-r border-border overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* Problem card */}
-            <Card className="border-zinc-800 bg-zinc-950/80">
-              <CardHeader className="pb-3 border-b border-zinc-900">
-                <CardTitle className="text-sm font-bold text-white">{problem[0].title}</CardTitle>
-                <p className="text-xs text-zinc-400 leading-relaxed">{problem[0].description}</p>
+            <Card className="border-border bg-card/80 shadow-xs">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="font-display text-sm font-bold text-foreground">{problem[0].title}</CardTitle>
+                <p className="text-xs text-muted-foreground leading-relaxed">{problem[0].description}</p>
                 {problem[0].tags && problem[0].tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 pt-1">
                     {problem[0].tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[9px]">{tag}</Badge>
+                      <Badge key={tag} variant="secondary" className="bg-muted border border-border text-muted-foreground text-[9px]">{tag}</Badge>
                     ))}
                   </div>
                 )}
               </CardHeader>
               <CardContent className="pt-3">
-                <p className="text-[10px] text-zinc-600">
+                <p className="text-[10px] text-muted-foreground">
                   {solutionsWithScores.length} solution{solutionsWithScores.length !== 1 ? 's' : ''} · {members.length} team member{members.length !== 1 ? 's' : ''}
                 </p>
               </CardContent>
@@ -154,44 +154,43 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
             {/* Solutions */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-violet-400" />
+                <h2 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                   Solutions
                 </h2>
               </div>
 
               {solutionsWithScores.length === 0 ? (
-                <div className="text-center py-8 text-zinc-600 text-xs">
+                <div className="text-center py-8 text-muted-foreground text-xs">
                   No solutions yet. {isEditor ? 'Propose the first one below!' : 'The team hasn\'t proposed any solutions yet.'}
                 </div>
               ) : (
                 <div className="space-y-2">
                   {solutionsWithScores.map(({ solution, score, authorName, authorEmail }, idx) => {
-                    const prevScore = solutionsWithScores[idx + 1]?.score;
                     return (
                       <Link key={solution.id} href={`/problems/${workspace.problemId}/solutions/${solution.id}`}
-                        className="block p-4 rounded-xl border border-zinc-800 bg-zinc-950/40 hover:border-violet-500/30 hover:bg-zinc-950 transition-all group"
+                        className="block p-4 rounded-xl border border-border bg-card/60 hover:border-violet-500/40 hover:bg-card transition-all group shadow-xs"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-xs text-zinc-300 line-clamp-2 flex-grow leading-relaxed group-hover:text-white transition-colors">
+                          <p className="text-xs text-foreground line-clamp-2 flex-grow leading-relaxed group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                             {solution.content}
                           </p>
                           <div className="flex-shrink-0 text-center">
                             <span className={`text-base font-black font-mono block ${
-                              !score ? 'text-zinc-600'
-                              : score >= 70 ? 'text-emerald-400'
-                              : score >= 50 ? 'text-amber-400'
-                              : 'text-rose-400'
+                              !score ? 'text-muted-foreground'
+                              : score >= 70 ? 'text-emerald-600 dark:text-emerald-400'
+                              : score >= 50 ? 'text-amber-600 dark:text-amber-400'
+                              : 'text-rose-600 dark:text-rose-400'
                             }`}>{score ?? '—'}</span>
-                            <span className="text-[9px] text-zinc-600">/100</span>
+                            <span className="text-[9px] text-muted-foreground">/100</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-[10px] text-zinc-600">
+                          <span className="text-[10px] text-muted-foreground">
                             by {authorName || authorEmail?.split('@')[0] || 'Unknown'}
                           </span>
                           {solution.isMerged && (
-                            <Badge className="text-[9px] bg-violet-500/10 text-violet-400 border-violet-500/20">🔀 Merged</Badge>
+                            <Badge className="text-[9px] bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">🔀 Merged</Badge>
                           )}
                         </div>
                       </Link>

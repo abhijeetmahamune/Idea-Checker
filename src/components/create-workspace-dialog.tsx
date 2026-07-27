@@ -74,73 +74,73 @@ export function CreateWorkspaceDialog({ problemId, existingWorkspaceId, existing
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5 text-xs border-zinc-800 text-zinc-400 hover:text-white hover:border-violet-500/40 hover:bg-violet-500/5"
+            className="gap-1.5 text-xs border-border text-muted-foreground hover:text-foreground hover:border-violet-500/40 hover:bg-violet-500/10 cursor-pointer"
           >
-            <Users className="h-3.5 w-3.5" />
+            <Users className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
             {existingWorkspaceId ? 'Open Workspace' : 'Create Workspace'}
           </Button>
         }
       />
 
-      <DialogContent className="bg-zinc-950 border-zinc-800 max-w-md">
+      <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <Users className="h-5 w-5 text-violet-400" />
+          <DialogTitle className="text-foreground flex items-center gap-2 font-display font-bold">
+            <Users className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             {created ? 'Workspace Ready' : 'Create Team Workspace'}
           </DialogTitle>
         </DialogHeader>
 
         {!created ? (
           <div className="space-y-4 pt-2">
-            <p className="text-xs text-zinc-500 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Create a shared workspace for your team to collaborate on this problem together. Members can chat, propose solutions, and use the AI assistant.
             </p>
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Hackathon Team Alpha"
-              className="bg-zinc-900 border-zinc-800 text-white"
+              className="bg-background border-border text-foreground"
               onKeyDown={e => e.key === 'Enter' && handleCreate()}
             />
             <Button
               onClick={handleCreate}
               disabled={loading || !name.trim()}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold gap-2"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold gap-2 cursor-pointer"
             >
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" />Creating...</> : 'Create Workspace'}
             </Button>
           </div>
         ) : (
           <div className="space-y-4 pt-2">
-            <div className="p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
-              <p className="text-xs font-bold text-emerald-400 mb-1">✓ Workspace is ready</p>
-              <p className="text-xs text-zinc-400">Share the invite link below with your team members.</p>
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">✓ Workspace is ready</p>
+              <p className="text-xs text-muted-foreground">Share the invite link below with your team members.</p>
             </div>
 
             {/* Invite link */}
             {created.inviteCode && (
               <div className="space-y-2">
-                <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Invite Link</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Invite Link</p>
                 <div className="flex gap-2">
                   <Input
                     readOnly
                     value={inviteLink}
-                    className="bg-zinc-900 border-zinc-800 text-zinc-300 text-xs font-mono"
+                    className="bg-background border-border text-foreground text-xs font-mono"
                   />
-                  <Button size="sm" variant="outline" onClick={copyLink} className="flex-shrink-0 border-zinc-800 gap-1.5">
-                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  <Button size="sm" variant="outline" onClick={copyLink} className="flex-shrink-0 border-border gap-1.5 cursor-pointer">
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   </Button>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span>Invite code:</span>
-                  <code className="text-violet-400 font-mono font-bold bg-violet-500/10 px-1.5 py-0.5 rounded">{created.inviteCode}</code>
+                  <code className="text-violet-600 dark:text-violet-400 font-mono font-bold bg-violet-500/10 px-1.5 py-0.5 rounded">{created.inviteCode}</code>
                 </div>
               </div>
             )}
 
             <Button
               onClick={() => { setOpen(false); router.push(`/workspace/${created.workspaceId}`); }}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold gap-2"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold gap-2 cursor-pointer"
             >
               <ExternalLink className="h-4 w-4" />
               Open Workspace

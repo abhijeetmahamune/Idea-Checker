@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white selection:bg-violet-500/30 selection:text-violet-200">
+    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-violet-500/30 selection:text-violet-500 dark:selection:text-violet-200 transition-colors duration-200">
       {/* Server component — fetches user for navbar auth state */}
       <Navbar />
 
@@ -20,15 +20,15 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-zinc-900 py-7 bg-black">
+      <footer className="relative z-10 border-t border-border py-7 bg-card/60 backdrop-blur-md">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Idea Checker — Built for founders who want honest feedback.
           </p>
-          <div className="flex gap-5 text-xs text-zinc-500">
-            <Link href="/community" className="hover:text-white transition-colors">Community</Link>
-            <Link href="/login" className="hover:text-white transition-colors">Dashboard</Link>
-            <Link href="/register" className="hover:text-white transition-colors">Sign Up</Link>
+          <div className="flex gap-5 text-xs text-muted-foreground">
+            <Link href="/community" className="hover:text-foreground transition-colors">Community</Link>
+            <Link href="/login" className="hover:text-foreground transition-colors">Dashboard</Link>
+            <Link href="/register" className="hover:text-foreground transition-colors">Sign Up</Link>
           </div>
         </div>
       </footer>

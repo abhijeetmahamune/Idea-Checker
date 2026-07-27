@@ -25,11 +25,11 @@ export function ProfileView({ user, isOwner }: ProfileViewProps) {
   });
 
   return (
-    <Card className="bg-zinc-950/60 backdrop-blur-md border-border relative overflow-hidden">
+    <Card className="bg-card/80 dark:bg-zinc-950/60 backdrop-blur-md border-border relative overflow-hidden shadow-xs hover:shadow-md">
       {isOwner && (
         <div className="absolute top-6 right-6 z-10">
           <Link href="/account">
-            <Button variant="outline" size="sm" className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800 hover:text-white">
+            <Button variant="outline" size="sm" className="bg-card border-border text-foreground hover:bg-accent cursor-pointer">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
@@ -38,42 +38,42 @@ export function ProfileView({ user, isOwner }: ProfileViewProps) {
       )}
       <CardContent className="p-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
-          <img src={avatarUrl} alt={user.name || user.email} className="w-24 h-24 rounded-full object-cover border-2 border-zinc-800" />
+          <img src={avatarUrl} alt={user.name || user.email} className="w-24 h-24 rounded-full object-cover border-2 border-border" />
           
           <div className="flex-1 space-y-2 mt-2">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="font-display text-2xl font-bold text-foreground">
               {user.name || 'Anonymous User'}
             </h2>
             {user.bio ? (
-              <p className="text-zinc-400 max-w-xl leading-relaxed">
+              <p className="text-muted-foreground max-w-xl leading-relaxed">
                 {user.bio}
               </p>
             ) : (
-              <p className="text-zinc-500 italic text-sm">No bio provided</p>
+              <p className="text-muted-foreground italic text-sm">No bio provided</p>
             )}
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-3 text-zinc-300">
-            <div className="bg-zinc-900 p-2 rounded-lg">
-              <Mail className="h-4 w-4 text-zinc-400" />
+        <div className="mt-8 pt-6 border-t border-border grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center gap-3 text-foreground">
+            <div className="bg-muted p-2 rounded-lg">
+              <Mail className="h-4 w-4 text-muted-foreground" />
             </div>
             <span className="text-sm truncate">{user.email}</span>
           </div>
 
           {user.location && (
-            <div className="flex items-center gap-3 text-zinc-300">
-              <div className="bg-zinc-900 p-2 rounded-lg">
-                <MapPin className="h-4 w-4 text-zinc-400" />
+            <div className="flex items-center gap-3 text-foreground">
+              <div className="bg-muted p-2 rounded-lg">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
               </div>
               <span className="text-sm truncate">{user.location}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-3 text-zinc-300">
-            <div className="bg-zinc-900 p-2 rounded-lg">
-              <Calendar className="h-4 w-4 text-zinc-400" />
+          <div className="flex items-center gap-3 text-foreground">
+            <div className="bg-muted p-2 rounded-lg">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
             </div>
             <span className="text-sm truncate">Joined {memberSince}</span>
           </div>
