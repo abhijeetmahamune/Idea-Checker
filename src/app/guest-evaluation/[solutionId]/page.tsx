@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StressTestView } from '@/components/stress-test-view';
 import { Badge } from '@/components/ui/badge';
 import { CommunityScoreWidget } from '@/components/community-score-widget';
+import { FounderClarifications } from '@/components/founder-clarifications';
 
 export const revalidate = 0; // Disable static caching so we fetch newest results immediately
 
@@ -115,8 +116,19 @@ export default async function GuestEvaluationPage({
                     showRegisterCta={!user}
                   />
                 </div>
-                {/* Community Score */}
-                <div className="lg:col-span-4 lg:sticky lg:top-20">
+                {/* Sidebar */}
+                <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
+                  {evaluation.clarificationQuestions && evaluation.clarificationQuestions.length > 0 && (
+                    <FounderClarifications
+                      questions={evaluation.clarificationQuestions}
+                      problemId={problem.id}
+                      solutionId={solutionId}
+                      solutionContent={solution.content}
+                      domain={evaluation.domain}
+                      existingClarifications={evaluation.founderClarifications}
+                      isOwner={user ? problem.userId === user.id : false}
+                    />
+                  )}
                   <CommunityScoreWidget
                     solutionId={solutionId}
                     initialAverage={communityScore.average}

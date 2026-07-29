@@ -1,3 +1,4 @@
+import { EditSolutionDialog } from '@/components/edit-solution-dialog';
 import { db } from '@/db';
 import { solutions, problems, evaluations, simulations, devilAdvocateReports, solutionRatings, deepReports } from '@/db/schema';
 import { eq, sql, desc, and, avg } from 'drizzle-orm';
@@ -14,6 +15,7 @@ import { DevilAdvocateView } from '@/components/devil-advocate-view';
 import { DeepReportView } from '@/components/deep-report-view';
 import { ScoreTimeline } from '@/components/score-timeline';
 import { CommunityScoreWidget } from '@/components/community-score-widget';
+import { FounderClarifications } from '@/components/founder-clarifications';
 
 export const revalidate = 0;
 
@@ -116,8 +118,8 @@ export default async function SolutionEvaluationPage({
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      {/* Header back-link */}
-      <div className="max-w-7xl mx-auto mb-8 flex items-center justify-between border-b border-border pb-4">
+      {/* Header back-link & Owner Actions */}
+      <div className="max-w-7xl mx-auto mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <Link
           href={`/problems/${id}`}
           className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors gap-1 font-medium"
@@ -125,9 +127,12 @@ export default async function SolutionEvaluationPage({
           <ArrowLeft className="h-4 w-4" />
           Back to Solutions List
         </Link>
-        <span className="text-xs text-muted-foreground font-mono">
-          Report Reference: {activeEval.id.substring(0, 8)}
-        </span>
+        <div className="flex items-center gap-3">
+          {isOwner && <EditSolutionDialog solution={solution} />}
+          <span className="text-xs text-muted-foreground font-mono">
+            Report Reference: {activeEval.id.substring(0, 8)}
+          </span>
+        </div>
       </div>
 
       <Tabs defaultValue={defaultTab} className="max-w-7xl mx-auto">
@@ -165,6 +170,7 @@ export default async function SolutionEvaluationPage({
                 evaluation={activeEval}
                 showRegisterCta={false}
                 pivotSuggestions={activeEval.pivotSuggestions ?? null}
+                isOwner={isOwner}
               />
             </div>
 
@@ -188,6 +194,7 @@ export default async function SolutionEvaluationPage({
                       id: e.id,
                       overallScore: e.overallScore,
                       createdAt: e.createdAt,
+                      evaluationType: e.evaluationType,
                       feedback: e.feedback,
                     }))}
                     activeEvalId={activeEval.id}
@@ -195,6 +202,19 @@ export default async function SolutionEvaluationPage({
                   />
                 </CardContent>
               </Card>
+
+              {/* Improve Evaluation Accuracy (Founder Clarifications Card) */}
+              {activeEval.clarificationQuestions && activeEval.clarificationQuestions.length > 0 && (
+                <FounderClarifications
+                  questions={activeEval.clarificationQuestions}
+                  problemId={id}
+                  solutionId={solutionId}
+                  solutionContent={solution.content}
+                  domain={activeEval.domain}
+                  existingClarifications={activeEval.founderClarifications}
+                  isOwner={isOwner}
+                />
+              )}
 
               {/* Community Score (only on public problems) */}
               {isPublicView && (

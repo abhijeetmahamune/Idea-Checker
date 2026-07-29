@@ -71,6 +71,13 @@
       "when": 1785081600591,
       "tag": "0009_glossy_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785330509162,
+      "tag": "0010_wet_paibok",
+      "breakpoints": true
     }
   ]
 }

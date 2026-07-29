@@ -76,9 +76,29 @@ export async function editSolutionAction(formData: FormData) {
         overallScore: evaluationData.overallScore,
         feedback: evaluationData.feedback,
         domain: null, // domain not tracked on re-evaluation unless passed
-        pivotSuggestions: null,
         successfulModels: evaluationData.successfulModels,
         failedModels: evaluationData.failedModels,
+        rawResponses: evaluationData.rawResponses,
+        consensusResult: evaluationData.consensusResult,
+        modelUsed: 'consensus-ensemble-v2',
+        promptVersion: 'evaluator-v2-consensus',
+        generationTimeMs: evaluationData.generationTimeMs,
+        promptTokens: evaluationData.promptTokens,
+        completionTokens: evaluationData.completionTokens,
+        totalTokens: evaluationData.totalTokens,
+        estimatedCost: evaluationData.estimatedCost,
+
+        contestedDimensions: evaluationData.contestedDimensions,
+        dimensionSpread: evaluationData.dimensionSpread,
+        bottleneck: evaluationData.bottleneck,
+        consensusSummary: evaluationData.consensusSummary,
+        trustLevel: evaluationData.trustLevel,
+        trustLabel: evaluationData.trustLabel,
+        rankedStrengths: evaluationData.rankedStrengths,
+        rankedWeaknesses: evaluationData.rankedWeaknesses,
+        clarificationQuestions: evaluationData.clarificationQuestions,
+        founderClarifications: evaluationData.founderClarifications,
+        evaluationType: evaluationData.evaluationType,
       });
 
     revalidatePath(`/problems/${currentSolution.problemId}`);

@@ -16,10 +16,18 @@ const evaluateRequestSchema = z.object({
   solutionContent: z.string().min(30, 'Solution content must be at least 30 characters long.'),
   tags: z.array(z.string()).optional(),
   problemId: z.string().uuid().optional(), // If proposing a solution to an existing problem
+  solutionId: z.string().uuid().optional(), // If re-evaluating an existing solution
   domain: z.string().optional(),           // Optional domain hint for tailored evaluation
   force: z.boolean().optional(),
+  founderClarifications: z.array(
+    z.object({
+      question: z.string(),
+      answer: z.string(),
+      dimension: z.string().optional(),
+    })
+  ).optional(),
 }).superRefine((data, ctx) => {
-  if (!data.problemId) {
+  if (!data.problemId && !data.solutionId) {
     if (!data.problemTitle || data.problemTitle.length < 5) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -81,10 +89,34 @@ export async function POST(request: NextRequest) {
     }
 
     let activeProblemId = validatedData.problemId;
-    let problemDesc: string;
+    let activeSolutionId = validatedData.solutionId;
+    let problemDesc: string = '';
 
-    // If existing problemId is provided, fetch and verify ownership/guestSessionId match
-    if (activeProblemId) {
+    if (activeSolutionId) {
+      // Re-evaluating an existing solution
+      const existingSol = await db
+        .select()
+        .from(solutions)
+        .where(and(eq(solutions.id, activeSolutionId), isNull(solutions.deletedAt)))
+        .limit(1);
+
+      if (existingSol.length === 0) {
+        return NextResponse.json({ error: 'Solution not found.' }, { status: 404 });
+      }
+
+      activeProblemId = existingSol[0].problemId;
+
+      const existingProb = await db
+        .select()
+        .from(problems)
+        .where(eq(problems.id, activeProblemId))
+        .limit(1);
+
+      if (existingProb.length > 0) {
+        problemDesc = existingProb[0].description;
+      }
+    } else if (activeProblemId) {
+      // Proposing a new solution to an existing problem
       const existing = await db
         .select()
         .from(problems)
@@ -96,7 +128,6 @@ export async function POST(request: NextRequest) {
       }
 
       const problemOwner = existing[0];
-      // Ensure the caller is either the user owner or guest session owner
       if (
         (problemOwner.userId && problemOwner.userId !== user?.id) ||
         (!problemOwner.userId && problemOwner.guestSessionId !== guestSessionId)
@@ -105,7 +136,20 @@ export async function POST(request: NextRequest) {
       }
 
       problemDesc = problemOwner.description;
+
+      const newSolution = await db
+        .insert(solutions)
+        .values({
+          problemId: activeProblemId,
+          userId: user?.id || null,
+          guestSessionId: user ? null : guestSessionId,
+          content: validatedData.solutionContent,
+        })
+        .returning();
+
+      activeSolutionId = newSolution[0].id;
     } else {
+      // Creating a new problem and solution
       if (!validatedData.problemTitle || !validatedData.problemDescription) {
         return NextResponse.json(
           { error: 'Problem title and description are required.' },
@@ -114,7 +158,6 @@ export async function POST(request: NextRequest) {
       }
       problemDesc = validatedData.problemDescription;
 
-      // Create new problem record
       const newProblem = await db
         .insert(problems)
         .values({
@@ -127,20 +170,19 @@ export async function POST(request: NextRequest) {
         .returning();
 
       activeProblemId = newProblem[0].id;
+
+      const newSolution = await db
+        .insert(solutions)
+        .values({
+          problemId: activeProblemId,
+          userId: user?.id || null,
+          guestSessionId: user ? null : guestSessionId,
+          content: validatedData.solutionContent,
+        })
+        .returning();
+
+      activeSolutionId = newSolution[0].id;
     }
-
-    // Create new solution record
-    const newSolution = await db
-      .insert(solutions)
-      .values({
-        problemId: activeProblemId!,
-        userId: user?.id || null,
-        guestSessionId: user ? null : guestSessionId,
-        content: validatedData.solutionContent,
-      })
-      .returning();
-
-    const activeSolutionId = newSolution[0].id;
 
     function computeHash(problem: string, solution: string): string {
       return crypto.createHash('sha256').update(`${problem || ''}||${solution || ''}`).digest('hex');
@@ -204,16 +246,30 @@ export async function POST(request: NextRequest) {
           totalTokens: cached[0].totalTokens,
           estimatedCost: cached[0].estimatedCost,
           contentHash: hash,
+
+          contestedDimensions: cached[0].contestedDimensions,
+          dimensionSpread: cached[0].dimensionSpread,
+          bottleneck: cached[0].bottleneck,
+          consensusSummary: cached[0].consensusSummary,
+          trustLevel: cached[0].trustLevel,
+          trustLabel: cached[0].trustLabel,
+          rankedStrengths: cached[0].rankedStrengths,
+          rankedWeaknesses: cached[0].rankedWeaknesses,
+
+          clarificationQuestions: cached[0].clarificationQuestions,
+          founderClarifications: cached[0].founderClarifications,
+          evaluationType: cached[0].evaluationType,
         });
       }
     }
 
     if (!cacheHit) {
-      // Run AI Evaluation (with optional domain context)
+      // Run AI Evaluation (with optional domain context & founder clarifications)
       const freshEval = await evaluateSolution(
         problemDesc,
         validatedData.solutionContent,
-        validatedData.domain
+        validatedData.domain,
+        validatedData.founderClarifications
       );
 
       evaluationData = freshEval;
@@ -249,14 +305,27 @@ export async function POST(request: NextRequest) {
         
         rawResponses: freshEval.rawResponses,
         consensusResult: freshEval.consensusResult,
-        modelUsed: 'consensus-ensemble',
-        promptVersion: 'evaluator-v1',
+        modelUsed: 'consensus-ensemble-v2',
+        promptVersion: 'evaluator-v2-consensus',
         generationTimeMs: freshEval.generationTimeMs,
         promptTokens: freshEval.promptTokens,
         completionTokens: freshEval.completionTokens,
         totalTokens: freshEval.totalTokens,
         estimatedCost: freshEval.estimatedCost,
         contentHash: hash,
+
+        contestedDimensions: freshEval.contestedDimensions,
+        dimensionSpread: freshEval.dimensionSpread,
+        bottleneck: freshEval.bottleneck,
+        consensusSummary: freshEval.consensusSummary,
+        trustLevel: freshEval.trustLevel,
+        trustLabel: freshEval.trustLabel,
+        rankedStrengths: freshEval.rankedStrengths,
+        rankedWeaknesses: freshEval.rankedWeaknesses,
+
+        clarificationQuestions: freshEval.clarificationQuestions,
+        founderClarifications: freshEval.founderClarifications,
+        evaluationType: freshEval.evaluationType,
       });
     }
 

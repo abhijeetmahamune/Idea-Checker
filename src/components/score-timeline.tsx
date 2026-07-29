@@ -1,4 +1,7 @@
-import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { TrendingUp, TrendingDown, Minus, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -6,6 +9,7 @@ interface Evaluation {
   id: string;
   overallScore: number;
   createdAt: Date;
+  evaluationType?: string | null;
   feedback?: {
     summary?: string;
     strengths?: string[];
@@ -108,13 +112,17 @@ function DeltaChip({ delta }: { delta: number | null }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps) {
+  const [expanded, setExpanded] = useState(false);
+
   // history is newest-first; reverse for chronological order in chart
   const chronological = [...history].reverse();
-  const scores = chronological.map(e => e.overallScore);
+  const scores = chronological.map((e) => e.overallScore);
 
   const latestScore = chronological[chronological.length - 1]?.overallScore ?? 0;
   const firstScore = chronological[0]?.overallScore ?? 0;
   const totalDelta = latestScore - firstScore;
+
+  const displayHistory = expanded ? history : history.slice(0, 2);
 
   return (
     <div className="space-y-4">
@@ -137,12 +145,12 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
       {/* Timeline list — newest first */}
       <div className="relative">
         {/* Vertical line */}
-        {history.length > 1 && (
+        {displayHistory.length > 1 && (
           <div className="absolute left-[19px] top-6 bottom-6 w-px bg-border" />
         )}
 
         <div className="space-y-2">
-          {history.map((ev, i) => {
+          {displayHistory.map((ev, i) => {
             const prevScore = history[i + 1]?.overallScore ?? null; // i+1 because history is newest-first
             const delta = prevScore !== null ? ev.overallScore - prevScore : null;
             const isActive = ev.id === activeEvalId;
@@ -176,6 +184,11 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
                           Latest
                         </span>
                       )}
+                      {ev.evaluationType === 'clarification_reevaluation' && (
+                        <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                          Clarified
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -196,6 +209,25 @@ export function ScoreTimeline({ history, activeEvalId, tab }: ScoreTimelineProps
             );
           })}
         </div>
+
+        {/* Expand / Collapse toggle button */}
+        {history.length > 2 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="w-full mt-3 pt-2.5 border-t border-border flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-semibold transition-colors cursor-pointer"
+          >
+            {expanded ? (
+              <>
+                Show less <ChevronUp className="h-3.5 w-3.5" />
+              </>
+            ) : (
+              <>
+                Show all {history.length} evaluations <ChevronDown className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

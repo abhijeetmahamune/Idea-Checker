@@ -84,7 +84,22 @@ export const evaluations = pgTable('evaluations', {
   totalTokens: integer('total_tokens'),
   estimatedCost: numeric('estimated_cost', { precision: 10, scale: 6 }),
   contentHash: text('content_hash'),
-  
+
+  // Evaluation Engine Consensus Upgrade fields
+  contestedDimensions: jsonb('contested_dimensions').$type<string[]>(),
+  dimensionSpread: jsonb('dimension_spread').$type<Record<string, number>>(),
+  bottleneck: jsonb('bottleneck').$type<{ dimension: string; score: number }>(),
+  consensusSummary: text('consensus_summary'),
+  trustLevel: text('trust_level'),
+  trustLabel: text('trust_label'),
+  rankedStrengths: jsonb('ranked_strengths').$type<{ text: string; mentionedBy: number }[]>(),
+  rankedWeaknesses: jsonb('ranked_weaknesses').$type<{ text: string; mentionedBy: number }[]>(),
+
+  // Founder Clarifications fields
+  clarificationQuestions: jsonb('clarification_questions').$type<{ question: string; dimension: string; reason: string }[]>(),
+  founderClarifications: jsonb('founder_clarifications').$type<{ question: string; answer: string; dimension?: string }[]>(),
+  evaluationType: text('evaluation_type'), // 'initial' | 'standard_reevaluation' | 'clarification_reevaluation'
+
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
