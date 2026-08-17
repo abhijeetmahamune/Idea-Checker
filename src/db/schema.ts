@@ -20,6 +20,10 @@ export const problems = pgTable('problems', {
   description: text('description').notNull(),
   tags: text('tags').array(), // Text array for tags
   isPublic: boolean('is_public').default(false).notNull(),
+  // ── Milestone 2: Problem lifecycle stage (controlled enum) ────────────────
+  stage: text('stage').default('EXPLORING').notNull(),
+  // ── Milestone 2: What the owner is seeking from the community (multi-value) ─
+  seeking: text('seeking').array().default([]).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });
@@ -178,10 +182,38 @@ export const simulations = pgTable('simulations', {
 export const devilAdvocateReports = pgTable('devil_advocate_reports', {
   id: uuid('id').defaultRandom().primaryKey(),
   solutionId: uuid('solution_id').references(() => solutions.id, { onDelete: 'cascade' }).notNull(),
+  version: integer('version').default(1).notNull(),
+  solutionContentSnapshot: text('solution_content_snapshot'),
+  previousReportId: uuid('previous_report_id'),
+  evolutionSummary: jsonb('evolution_summary').$type<{
+    resolved: string[];
+    improved: string[];
+    unresolved: string[];
+    worsened: string[];
+    newRisks: string[];
+    summaryNote?: string;
+  }>(),
   report: jsonb('report').$type<{
     verdict: string;
+    overallRiskLevel: 'Critical' | 'High Risk' | 'Moderate Risk' | 'Low Risk';
+    charges: {
+      title: string;
+      severity: 'Fatal' | 'Severe' | 'Moderate';
+      reasoning: string;
+      evidence: string;
+      businessImpact: string;
+      founderAssumption: string;
+      suggestedValidation: string;
+      counterEvidence: string;
+    }[];
     failureReasons: { reason: string; severity: 'Fatal' | 'Severe' | 'Moderate' }[];
-    ignoredCompetitors: { name: string; why_threat: string }[];
+    ignoredCompetitors: {
+      name: string;
+      threat: string;
+      why_threat: string;
+      whyCustomerChooses: string;
+      missingDifferentiation: string;
+    }[];
     founderTraps: string[];
     conditionToReconsider: string;
   }>().notNull(),

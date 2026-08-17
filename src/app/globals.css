@@ -338,3 +338,1633 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CINEMATIC ENGINE — Devil's Advocate Video Player System
+   Added for the cinematic player milestone. All styles are namespaced
+   with "cinematic-" to avoid any collision with existing styles.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Container: fullscreen immersive layout ── */
+.cinematic-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  overflow: hidden;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Video: fills container with cover fit ── */
+.cinematic-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* ── Overlay: positioned above video for future subtitles/dialogue ── */
+.cinematic-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* ── Transition Layer: fade-to-black overlay ── */
+.cinematic-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background-color: #000;
+  pointer-events: none;
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* ── Loading Shimmer (shown while video buffers) ── */
+.cinematic-loading-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0a0c14;
+}
+
+.cinematic-loading-pulse {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+  animation: cinematic-pulse 2s ease-in-out infinite;
+}
+
+@keyframes cinematic-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.8;
+  }
+}
+
+/* ── Start Prompt (click-to-begin screen) ── */
+.cinematic-start-prompt {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--font-outfit, var(--font-jakarta, system-ui));
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cinematic-start-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(244, 63, 94, 0.08) 0%,
+    rgba(244, 63, 94, 0.02) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.cinematic-start-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cinematic-pulse 3s ease-in-out infinite;
+}
+
+.cinematic-start-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.cinematic-start-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0;
+}
+
+.cinematic-start-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.cinematic-start-ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  animation: cinematic-ring-pulse 3s ease-in-out infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% - 24px));
+  pointer-events: none;
+}
+
+@keyframes cinematic-ring-pulse {
+  0%, 100% {
+    transform: translate(-50%, calc(-50% - 24px)) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 24px)) scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* ── Report Placeholder (terminal state) ── */
+.cinematic-report-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0a0c14;
+}
+
+.cinematic-report-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.cinematic-report-glow--left {
+  top: 20%;
+  left: 15%;
+  background: rgba(244, 63, 94, 0.15);
+}
+
+.cinematic-report-glow--right {
+  bottom: 20%;
+  right: 15%;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.cinematic-report-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  padding: 48px;
+}
+
+.cinematic-report-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cinematic-report-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.cinematic-report-title {
+  font-family: var(--font-outfit, var(--font-jakarta, system-ui));
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: rgba(244, 63, 94, 0.85);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cinematic-report-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(244, 63, 94, 0.4),
+    transparent
+  );
+}
+
+.cinematic-report-subtitle {
+  font-family: var(--font-outfit, var(--font-jakarta, system-ui));
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.cinematic-report-note {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 0;
+  font-style: italic;
+  max-width: 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MILESTONE 2 — Chamber Report Experience
+   All classes namespaced to avoid collision with existing styles.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Reaction Prompt ────────────────────────────────────────────────────
+   Floats over the cinematic chamber after the REACTION video ends.
+   The chamber remains visible through the vignette.
+── */
+
+.reaction-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* Soft dark vignette so the prompt text is legible against the video */
+.reaction-prompt__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+  opacity: 0;
+  transition: opacity 800ms ease;
+  pointer-events: none;
+}
+
+.reaction-prompt__vignette--active {
+  opacity: 1;
+}
+
+.reaction-prompt__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+  padding: 40px 32px;
+}
+
+/* Thin horizontal separator lines */
+.reaction-prompt__line {
+  width: 180px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(244, 63, 94, 0.45) 30%,
+    rgba(244, 63, 94, 0.45) 70%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: scaleX(0.5);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.reaction-prompt__line--visible {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.reaction-prompt__tagline {
+  font-family: var(--font-outfit, var(--font-jakarta, system-ui));
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.94);
+  margin: 0;
+  font-style: italic;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reaction-prompt__tagline--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* CTA Wrapper for staggered reveal */
+.reaction-prompt__cta-wrapper {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reaction-prompt__cta-wrapper--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* "Open Case File" — premium crimson CTA button */
+.reaction-prompt__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 36px;
+  border-radius: 3px;
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  background: rgba(220, 38, 38, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  font-family: var(--font-outfit, var(--font-jakarta, system-ui));
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    transform 160ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.reaction-prompt__cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.reaction-prompt__cta:hover {
+  background: rgba(220, 38, 38, 0.24);
+  border-color: rgba(244, 63, 94, 0.8);
+  box-shadow: 0 0 32px rgba(220, 38, 38, 0.35), 0 4px 20px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.reaction-prompt__cta:focus-visible {
+  outline: 2px solid rgba(244, 63, 94, 0.9);
+  outline-offset: 4px;
+}
+
+.reaction-prompt__cta:hover::before {
+  opacity: 1;
+}
+
+.reaction-prompt__cta:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.reaction-prompt__cta-text {
+  position: relative;
+  z-index: 1;
+}
+
+.reaction-prompt__cta-arrow {
+  position: relative;
+  z-index: 1;
+  transition: transform 200ms ease;
+  display: inline-block;
+}
+
+.reaction-prompt__cta:hover .reaction-prompt__cta-arrow {
+  transform: translateX(5px);
+}
+
+/* ── Chamber Reading Overlay ────────────────────────────────────────────
+   Semi-transparent dark layer over the chamber when report is open.
+   Video plays through it — the Devil remains visible.
+── */
+
+.chamber-reading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: rgba(4, 5, 10, 0.82);
+  backdrop-filter: blur(0px); /* intentionally zero — keep chamber visible */
+  pointer-events: none;
+  transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* ── Case File Panel ────────────────────────────────────────────────────
+   The main report experience. Positioned above the dim overlay.
+── */
+
+.case-file-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-outfit, var(--font-jakarta, 'Georgia', serif));
+  animation: case-file-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes case-file-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Top bar ── */
+.case-file-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.case-file-return-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 200ms ease;
+}
+
+.case-file-return-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.case-file-return-arrow {
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 200ms ease;
+}
+
+.case-file-return-btn:hover .case-file-return-arrow {
+  transform: translateX(-3px);
+}
+
+/* Classification stamp */
+.case-file-stamp {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(220, 38, 38, 0.35);
+  text-transform: uppercase;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  padding: 3px 10px;
+  border-radius: 2px;
+}
+
+/* ── Body: nav + reading area ── */
+.case-file-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Left Navigation ── */
+.case-file-nav {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 32px 0 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+.case-file-nav-header {
+  padding: 0 28px 20px;
+}
+
+.case-file-nav-label {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: rgba(220, 38, 38, 0.6);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.case-file-nav-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 100%
+  );
+}
+
+.case-file-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.case-file-nav-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 28px 10px 20px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+  font-family: inherit;
+}
+
+.case-file-return-btn:focus-visible {
+  outline: 2px solid rgba(244, 63, 94, 0.8);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.case-file-nav-item:focus-visible {
+  outline: 2px solid rgba(244, 63, 94, 0.8);
+  outline-offset: -2px;
+}
+
+.case-file-nav-item--active {
+  background: rgba(220, 38, 38, 0.06) !important;
+  border-left-color: rgba(220, 38, 38, 0.6) !important;
+}
+
+.case-file-nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  margin-top: 6px;
+  flex-shrink: 0;
+  transition: background 180ms ease;
+}
+
+.case-file-nav-dot--active {
+  background: rgba(220, 38, 38, 0.8);
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.5);
+}
+
+.case-file-nav-item--expanded .case-file-nav-dot {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.case-file-nav-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.case-file-nav-item-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+  transition: color 180ms ease;
+}
+
+.case-file-nav-item--active .case-file-nav-item-label {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+.case-file-nav-item--expanded .case-file-nav-item-label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.case-file-nav-item-sublabel {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.04em;
+}
+
+/* ── Right Reading Area ── */
+.case-file-reading-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 56px 60px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  min-width: 0;
+}
+
+.case-file-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  max-width: 720px;
+}
+
+.case-file-section-wrapper {
+  opacity: 0.72;
+  transition: opacity 300ms ease;
+}
+
+.case-file-section-wrapper--focused {
+  opacity: 1;
+}
+
+/* ── Section Content ── */
+.case-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.case-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.case-section-eyebrow {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(220, 38, 38, 0.55);
+}
+
+.case-section-title {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.94);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.case-section-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(220, 38, 38, 0.3) 0%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 100%
+  );
+  margin-top: 4px;
+}
+
+/* ── Verdict ── */
+.case-verdict-text {
+  font-size: 16px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+  font-weight: 300;
+  max-width: 640px;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* ── Failure Reasons ── */
+.case-failures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.case-failure-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.case-failure-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.case-failure-number {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+}
+
+.case-failure-reason {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.68);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* ── Severity Badge ── */
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 2px;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.severity-badge--fatal {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: rgba(252, 165, 165, 0.9);
+}
+
+.severity-badge--severe {
+  background: rgba(234, 88, 12, 0.1);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  color: rgba(253, 186, 116, 0.9);
+}
+
+.severity-badge--moderate {
+  background: rgba(161, 161, 170, 0.08);
+  border: 1px solid rgba(161, 161, 170, 0.22);
+  color: rgba(212, 212, 216, 0.7);
+}
+
+/* ── Competitors ── */
+.case-competitors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.case-competitor-item {
+  padding: 24px 0;
+}
+
+.case-competitor-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.case-competitor-threat {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* ── Founder Traps ── */
+.case-traps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  counter-reset: trap-counter;
+}
+
+.case-trap-item {
+  display: flex;
+  gap: 20px;
+  padding: 24px 0;
+  align-items: flex-start;
+}
+
+.case-trap-number {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(220, 38, 38, 0.4);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  margin-top: 3px;
+  min-width: 24px;
+}
+
+.case-trap-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.66);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* ── Reconsideration ── */
+.case-reconsider-quote {
+  margin: 0;
+  padding: 24px 28px;
+  border-left: 2px solid rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.04);
+  border-radius: 0 4px 4px 0;
+}
+
+.case-reconsider-text {
+  font-size: 15px;
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.68);
+  margin: 0;
+  font-weight: 300;
+  font-style: italic;
+}
+
+/* Subtle section separator */
+.case-item-separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-top: 0;
+}
+
+/* ── Challenge the Advocate ─────────────────────────────────────────────
+   UI only — no AI connection in Milestone 2.
+── */
+
+.challenge-advocate {
+  margin-top: 64px;
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.challenge-advocate__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.challenge-advocate__label {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.challenge-advocate__note {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(220, 38, 38, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.challenge-advocate__input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.challenge-advocate__textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-family: var(--font-outfit, system-ui);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+  resize: none;
+  outline: none;
+  cursor: not-allowed;
+  box-sizing: border-box;
+}
+
+.challenge-advocate__textarea::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+  font-style: italic;
+}
+
+.challenge-advocate__send {
+  align-self: flex-end;
+  padding: 9px 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.28);
+  font-family: var(--font-outfit, system-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+}
+
+/* ── Responsive — Tablet (768px – 1024px) ───────────────────────────────
+   Maintain full experience but reduce padding.
+── */
+
+@media (max-width: 1024px) {
+  .case-file-nav {
+    width: 200px;
+  }
+
+  .case-file-reading-area {
+    padding: 32px 36px 48px;
+  }
+
+  .case-file-topbar {
+    padding: 16px 24px 12px;
+  }
+}
+
+/* ── Responsive — Mobile (<768px) ───────────────────────────────────────
+   On portrait mobile: simplified, scrollable single-column layout.
+   The cinematic chamber is NOT shown — this is a clean reading experience.
+── */
+
+@media (max-width: 767px) {
+  /* Override the fixed cinematic container for mobile reading */
+  .case-file-panel {
+    position: fixed;
+    inset: 0;
+    background: #090b12;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 100; /* above everything */
+    animation: case-file-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .case-file-topbar {
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    background: rgba(9, 11, 18, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+
+  .case-file-body {
+    flex-direction: column;
+  }
+
+  .case-file-nav {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 0 8px;
+    overflow: visible;
+  }
+
+  .case-file-nav-header {
+    padding: 0 20px 12px;
+  }
+
+  .case-file-nav-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0;
+    padding: 0 12px;
+  }
+
+  .case-file-nav-item {
+    padding: 8px 12px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: fit-content;
+  }
+
+  .case-file-nav-item--active {
+    border-bottom-color: rgba(220, 38, 38, 0.6) !important;
+    background: transparent !important;
+    border-left: none !important;
+  }
+
+  .case-file-nav-dot {
+    display: none;
+  }
+
+  .case-file-nav-item-sublabel {
+    display: none;
+  }
+
+  .case-file-nav-item-label {
+    font-size: 11px;
+  }
+
+  .case-file-reading-area {
+    padding: 28px 20px 48px;
+    overflow: visible;
+  }
+
+  .case-file-sections {
+    gap: 40px;
+  }
+
+  .case-section-title {
+    font-size: 22px;
+  }
+
+  .challenge-advocate {
+    margin-top: 48px;
+  }
+}
+
+/* ── Reduced Motion Overrides ───────────────────────────────────────────
+   When prefers-reduced-motion: reduce is set, skip all animations.
+── */
+
+@media (prefers-reduced-motion: reduce) {
+  .case-file-panel {
+    animation: none;
+  }
+
+  .reaction-prompt__content {
+    animation: none;
+  }
+
+  .case-section-content {
+    animation: none;
+  }
+
+  .chamber-reading-overlay {
+    transition: none;
+  }
+
+  .reaction-prompt__cta {
+    transition: none;
+  }
+
+  .case-file-return-btn,
+  .case-file-return-arrow,
+  .case-file-nav-item,
+  .case-file-nav-dot,
+  .case-file-nav-item-label {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MILESTONE 3 — Real Backend Connection Styles
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Investigation Messages ─────────────────────────────────────────────
+   Shown during ANALYSIS_LOOP while waiting for the backend.
+── */
+
+.investigation-messages {
+  position: absolute;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.investigation-messages__dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.investigation-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.5);
+  animation: dot-pulse 1.4s ease-in-out infinite both;
+}
+
+.investigation-dot:nth-child(1) { animation-delay: 0s; }
+.investigation-dot:nth-child(2) { animation-delay: 0.2s; }
+.investigation-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dot-pulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.investigation-messages__text {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0;
+  transition: opacity 400ms ease;
+  white-space: nowrap;
+}
+
+.investigation-messages__text--fading {
+  opacity: 0;
+}
+
+/* ── Report Error State ──────────────────────────────────────────────────
+   Full-chamber overlay for API failures. Chamber video plays through it.
+── */
+
+.report-error-state {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  animation: case-file-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.report-error-state__vignette {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 10, 0.88);
+  pointer-events: none;
+}
+
+.report-error-state__card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 48px 44px;
+  max-width: 440px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  background: rgba(12, 14, 22, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.report-error-state__icon {
+  font-size: 32px;
+  opacity: 0.6;
+  filter: grayscale(0.5);
+}
+
+.report-error-state__title {
+  font-family: var(--font-outfit, system-ui);
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.report-error-state__detail {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  color: rgba(220, 38, 38, 0.55);
+  margin: -8px 0 0;
+  word-break: break-word;
+}
+
+.report-error-state__divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.report-error-state__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.report-error-state__btn {
+  padding: 11px 20px;
+  border-radius: 4px;
+  font-family: var(--font-outfit, system-ui);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+
+.report-error-state__btn--primary {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: rgba(252, 165, 165, 0.9);
+}
+
+.report-error-state__btn--primary:hover {
+  background: rgba(220, 38, 38, 0.22);
+  border-color: rgba(220, 38, 38, 0.65);
+}
+
+.report-error-state__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.report-error-state__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Loading Mode Selector ───────────────────────────────────────────────
+   Shown in the start prompt. Compact radio group.
+── */
+
+.cinematic-start-mode-wrap {
+  margin-top: 8px;
+  /* Click propagation is stopped by the outer div in JSX */
+}
+
+.loading-mode-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.loading-mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.loading-mode-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  position: relative;
+}
+
+.loading-mode-radio:checked {
+  border-color: rgba(220, 38, 38, 0.8);
+  box-shadow: inset 0 0 0 3px rgba(220, 38, 38, 0.7);
+}
+
+.loading-mode-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.loading-mode-label__title {
+  font-family: var(--font-outfit, system-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-mode-label__desc {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.04em;
+}
+
+/* ── Standard Loading Screen ─────────────────────────────────────────────
+   Used in Standard mode — no videos, just a dark spinner.
+── */
+
+.standard-loading-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.standard-loading-icon {
+  font-size: 40px;
+  animation: standard-pulse 2s ease-in-out infinite;
+}
+
+@keyframes standard-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+
+.standard-loading-text {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}
+
+/* Milestone 3 reduced-motion additions */
+@media (prefers-reduced-motion: reduce) {
+  .investigation-dot {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .investigation-messages__text {
+    transition: none;
+  }
+
+  .standard-loading-icon {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .report-error-state {
+    animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CHALLENGE THE ADVOCATE CONVERSATION STYLES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.challenge-advocate__prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.challenge-advocate__prompt-pill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-outfit, system-ui);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease, transform 150ms ease;
+}
+
+.challenge-advocate__prompt-pill:hover:not(:disabled) {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.challenge-advocate__prompt-pill:focus-visible {
+  outline: 2px solid rgba(244, 63, 94, 0.8);
+  outline-offset: 2px;
+}
+
+.challenge-advocate__history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.challenge-message {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: case-file-enter 300ms ease both;
+}
+
+.challenge-message--user {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  align-self: flex-end;
+  max-width: 88%;
+}
+
+.challenge-message--advocate {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.challenge-message--loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+}
+
+.challenge-message__header {
+  margin-bottom: 4px;
+}
+
+.challenge-message__sender {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(244, 63, 94, 0.8);
+  font-weight: 700;
+}
+
+.challenge-message--user .challenge-message__sender {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.challenge-message__content {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
+}
+
+.challenge-advocate__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin-bottom: 12px;
+}
+
+.challenge-advocate__error-text {
+  font-size: 12px;
+  color: rgba(254, 202, 202, 0.9);
+  margin: 0;
+}
+
+.challenge-advocate__retry-btn {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Charge detail enhancements */
+.case-section-risk-tag {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: rgba(252, 165, 165, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-left: 12px;
+}
+
+.case-failure-title {
+  font-family: var(--font-outfit, system-ui);
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.case-charge-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.case-charge-detail--counter {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.case-charge-detail__label {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.case-charge-detail--counter .case-charge-detail__label {
+  color: rgba(52, 211, 153, 0.8);
+}
+
+.case-charge-detail__value {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.case-competitor-subdetail {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 4px;
+}
+
+.case-competitor-subdetail strong {
+  color: rgba(255, 255, 255, 0.75);
+}

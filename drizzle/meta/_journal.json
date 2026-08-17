@@ -78,6 +78,20 @@
       "when": 1785330509162,
       "tag": "0010_wet_paibok",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786726527207,
+      "tag": "0011_melodic_silver_samurai",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786788075369,
+      "tag": "0012_fancy_venom",
+      "breakpoints": true
     }
   ]
 }

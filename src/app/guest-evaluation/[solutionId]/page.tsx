@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/navbar';
 import { EvaluationView } from '@/components/evaluation-view';
+import { PendingEvaluationCard } from '@/components/pending-evaluation-card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StressTestView } from '@/components/stress-test-view';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +34,7 @@ export default async function GuestEvaluationPage({
     })
     .from(solutions)
     .innerJoin(problems, eq(solutions.problemId, problems.id))
-    .innerJoin(evaluations, eq(evaluations.solutionId, solutions.id))
+    .leftJoin(evaluations, eq(evaluations.solutionId, solutions.id))
     .where(eq(solutions.id, solutionId))
     .limit(1);
 
@@ -76,6 +77,8 @@ export default async function GuestEvaluationPage({
     userRating: userRatingResult[0]?.rating ?? 0,
   };
 
+  const isOwner = user ? (problem.userId === user.id || solution.userId === user.id) : true;
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-200">
       {/* Navbar */}
@@ -109,16 +112,27 @@ export default async function GuestEvaluationPage({
             <TabsContent value="score" className="mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div className="lg:col-span-8">
-                  <EvaluationView
-                    problem={problem}
-                    solution={solution}
-                    evaluation={evaluation}
-                    showRegisterCta={!user}
-                  />
+                  {evaluation ? (
+                    <EvaluationView
+                      problem={problem}
+                      solution={solution}
+                      evaluation={evaluation}
+                      showRegisterCta={!user}
+                    />
+                  ) : (
+                    <PendingEvaluationCard
+                      problemId={problem.id}
+                      solutionId={solutionId}
+                      problemTitle={problem.title}
+                      problemDescription={problem.description}
+                      solutionContent={solution.content}
+                      isOwner={isOwner}
+                    />
+                  )}
                 </div>
                 {/* Sidebar */}
                 <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
-                  {evaluation.clarificationQuestions && evaluation.clarificationQuestions.length > 0 && (
+                  {evaluation && evaluation.clarificationQuestions && evaluation.clarificationQuestions.length > 0 && (
                     <FounderClarifications
                       questions={evaluation.clarificationQuestions}
                       problemId={problem.id}
@@ -126,7 +140,7 @@ export default async function GuestEvaluationPage({
                       solutionContent={solution.content}
                       domain={evaluation.domain}
                       existingClarifications={evaluation.founderClarifications}
-                      isOwner={user ? problem.userId === user.id : false}
+                      isOwner={isOwner}
                     />
                   )}
                   <CommunityScoreWidget
@@ -134,7 +148,7 @@ export default async function GuestEvaluationPage({
                     initialAverage={communityScore.average}
                     initialTotal={communityScore.total}
                     initialUserRating={communityScore.userRating}
-                    isOwner={user ? problem.userId === user.id : false}
+                    isOwner={isOwner}
                     isGuest={!user}
                   />
                 </div>

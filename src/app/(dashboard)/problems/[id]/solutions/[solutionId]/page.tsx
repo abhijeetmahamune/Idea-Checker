@@ -1,10 +1,11 @@
 import { EditSolutionDialog } from '@/components/edit-solution-dialog';
 import { db } from '@/db';
-import { solutions, problems, evaluations, simulations, devilAdvocateReports, solutionRatings, deepReports } from '@/db/schema';
-import { eq, sql, desc, and, avg } from 'drizzle-orm';
+import { solutions, problems, evaluations, simulations, devilAdvocateReports, solutionRatings, deepReports, workspaces, workspaceMembers } from '@/db/schema';
+import { eq, sql, desc, and } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { EvaluationView } from '@/components/evaluation-view';
+import { PendingEvaluationCard } from '@/components/pending-evaluation-card';
 import { ArrowLeft, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -32,7 +33,9 @@ export default async function SolutionEvaluationPage({
   if (!id || !solutionId) notFound();
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) redirect('/login');
 
@@ -48,10 +51,33 @@ export default async function SolutionEvaluationPage({
 
   const { solution, problem } = solutionResult[0];
 
-  const isOwner = problem.userId === user.id && solution.userId === user.id;
+  const isOwner = problem.userId === user.id || solution.userId === user.id;
   const isPublicView = problem.isPublic;
 
-  if (!isOwner && !isPublicView) redirect('/dashboard');
+  // Check workspace membership if not owner/public
+  let isWorkspaceMember = false;
+  if (!isOwner && !isPublicView) {
+    const ws = await db
+      .select({ id: workspaces.id })
+      .from(workspaces)
+      .where(eq(workspaces.problemId, problem.id))
+      .limit(1);
+    if (ws[0]) {
+      const mem = await db
+        .select({ id: workspaceMembers.id })
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, ws[0].id),
+            eq(workspaceMembers.userId, user.id)
+          )
+        )
+        .limit(1);
+      if (mem[0]) isWorkspaceMember = true;
+    }
+  }
+
+  if (!isOwner && !isPublicView && !isWorkspaceMember) redirect('/dashboard');
 
   // 2. Fetch all evaluations for this solution (newest first for timeline)
   const history = await db
@@ -60,11 +86,9 @@ export default async function SolutionEvaluationPage({
     .where(eq(evaluations.solutionId, solutionId))
     .orderBy(sql`${evaluations.createdAt} desc`);
 
-  if (history.length === 0) notFound();
-
-  const activeEval = evalId
-    ? history.find((e) => e.id === evalId) || history[0]
-    : history[0];
+  const activeEval = history.length > 0
+    ? (evalId ? history.find((e) => e.id === evalId) || history[0] : history[0])
+    : null;
 
   // 3. Fetch all simulations
   const solutionSimulations = await db
@@ -81,7 +105,10 @@ export default async function SolutionEvaluationPage({
     .orderBy(desc(devilAdvocateReports.createdAt))
     .limit(1);
 
-  const latestDevilReport = devilReports[0]?.report ?? null;
+  const latestDevilRecord = devilReports[0] ?? null;
+  const latestDevilReport = latestDevilRecord?.report ?? null;
+  const latestDevilReportId = latestDevilRecord?.id ?? undefined;
+  const latestEvolutionSummary = latestDevilRecord?.evolutionSummary ?? (latestDevilReport as any)?.evolutionSummary ?? null;
 
   // 5. Community score aggregate + user's own rating
   const ratingStats = await db
@@ -105,7 +132,7 @@ export default async function SolutionEvaluationPage({
   };
 
   const defaultTab = tab || 'score';
-  
+
   // Fetch latest completed deep report from the dedicated deep_reports table
   const deepReportsResult = await db
     .select()
@@ -129,9 +156,11 @@ export default async function SolutionEvaluationPage({
         </Link>
         <div className="flex items-center gap-3">
           {isOwner && <EditSolutionDialog solution={solution} />}
-          <span className="text-xs text-muted-foreground font-mono">
-            Report Reference: {activeEval.id.substring(0, 8)}
-          </span>
+          {activeEval && (
+            <span className="text-xs text-muted-foreground font-mono">
+              Report Reference: {activeEval.id.substring(0, 8)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -146,7 +175,7 @@ export default async function SolutionEvaluationPage({
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="devil" className="flex items-center gap-1.5">
+          <TabsTrigger value="devil" className="flex items-center gap-1.5 data-[state=active]:bg-rose-500/15 data-[state=active]:text-rose-400 data-[state=active]:border-rose-500/40 font-medium">
             Devil&apos;s Advocate
             {latestDevilReport && (
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
@@ -164,47 +193,60 @@ export default async function SolutionEvaluationPage({
         <TabsContent value="score" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-4">
-              <EvaluationView
-                problem={problem}
-                solution={solution}
-                evaluation={activeEval}
-                showRegisterCta={false}
-                pivotSuggestions={activeEval.pivotSuggestions ?? null}
-                isOwner={isOwner}
-              />
+              {activeEval ? (
+                <EvaluationView
+                  problem={problem}
+                  solution={solution}
+                  evaluation={activeEval}
+                  showRegisterCta={false}
+                  pivotSuggestions={activeEval.pivotSuggestions ?? null}
+                  isOwner={isOwner}
+                />
+              ) : (
+                <PendingEvaluationCard
+                  problemId={id}
+                  solutionId={solutionId}
+                  problemTitle={problem.title}
+                  problemDescription={problem.description}
+                  solutionContent={solution.content}
+                  isOwner={isOwner}
+                />
+              )}
             </div>
 
             {/* Sidebar: Timeline + Community Score */}
             <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
               {/* Score Evolution Timeline */}
-              <Card className="border-border bg-card/80 dark:bg-zinc-950/80 shadow-xs hover:shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-violet-600/5 rounded-full filter blur-2xl pointer-events-none" />
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="font-display text-base font-bold flex items-center gap-2 text-foreground">
-                    <Activity className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                    Idea Evolution
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground text-xs">
-                    Track how your score changed across every re-evaluation.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4 px-4 pb-4">
-                  <ScoreTimeline
-                    history={history.map(e => ({
-                      id: e.id,
-                      overallScore: e.overallScore,
-                      createdAt: e.createdAt,
-                      evaluationType: e.evaluationType,
-                      feedback: e.feedback,
-                    }))}
-                    activeEvalId={activeEval.id}
-                    tab={defaultTab}
-                  />
-                </CardContent>
-              </Card>
+              {history.length > 0 && activeEval && (
+                <Card className="border-border bg-card/80 dark:bg-zinc-950/80 shadow-xs hover:shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-violet-600/5 rounded-full filter blur-2xl pointer-events-none" />
+                  <CardHeader className="pb-4 border-b border-border">
+                    <CardTitle className="font-display text-base font-bold flex items-center gap-2 text-foreground">
+                      <Activity className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                      Idea Evolution
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground text-xs">
+                      Track how your score changed across every re-evaluation.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4 px-4 pb-4">
+                    <ScoreTimeline
+                      history={history.map(e => ({
+                        id: e.id,
+                        overallScore: e.overallScore,
+                        createdAt: e.createdAt,
+                        evaluationType: e.evaluationType,
+                        feedback: e.feedback,
+                      }))}
+                      activeEvalId={activeEval?.id}
+                      tab={defaultTab}
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Improve Evaluation Accuracy (Founder Clarifications Card) */}
-              {activeEval.clarificationQuestions && activeEval.clarificationQuestions.length > 0 && (
+              {activeEval && activeEval.clarificationQuestions && activeEval.clarificationQuestions.length > 0 && (
                 <FounderClarifications
                   questions={activeEval.clarificationQuestions}
                   problemId={id}
@@ -241,7 +283,9 @@ export default async function SolutionEvaluationPage({
           <DevilAdvocateView
             solutionId={solutionId}
             initialReport={latestDevilReport}
-            domain={activeEval.domain ?? undefined}
+            initialReportId={latestDevilReportId}
+            initialEvolutionSummary={latestEvolutionSummary}
+            domain={activeEval?.domain ?? undefined}
           />
         </TabsContent>
 
@@ -252,7 +296,7 @@ export default async function SolutionEvaluationPage({
             initialReport={deepReport}
             problemDescription={problem.description}
             solutionContent={solution.content}
-            domain={activeEval.domain ?? undefined}
+            domain={activeEval?.domain ?? undefined}
             isOwner={isOwner}
           />
         </TabsContent>
@@ -260,3 +304,4 @@ export default async function SolutionEvaluationPage({
     </div>
   );
 }
+

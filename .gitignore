@@ -29,9 +29,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+migration_out.log
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,6 +42,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-migration_out.log
 scratch/
+
+# internal project context & specifications
+*_CURRENT_CONTEXT.md
+*_CURRENTCONTEXT.md
+*CONTEXT*.md
+PROJECT_DESCRIPTION.md
+WORKFLOW_AND_FEATURES.md
+*.pdf
 

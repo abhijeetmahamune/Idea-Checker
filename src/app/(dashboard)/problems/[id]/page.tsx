@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { problems, solutions, evaluations, users, workspaces } from '@/db/schema';
+import { problems, solutions, evaluations, users, workspaces, workspaceMembers } from '@/db/schema';
 import { eq, sql, and, isNull } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -17,6 +17,8 @@ import { VisibilityToggle } from '@/components/visibility-toggle';
 import { CommentSection } from '@/components/comment-section';
 import { MergeSolutionsDialog } from '@/components/merge-solutions-dialog';
 import { CreateWorkspaceDialog } from '@/components/create-workspace-dialog';
+import { ProblemStatusWidget } from '@/components/problem-status-widget';
+import type { ProblemStage, SeekingOption } from '@/lib/problem-constants';
 
 export const revalidate = 0;
 
@@ -47,7 +49,30 @@ export default async function ProblemDetailPage({
   const isOwner = problem.userId === user.id;
   const isPublicView = problem.isPublic;
 
-  if (!isOwner && !isPublicView) redirect('/dashboard');
+  // Check workspace membership if not owner/public
+  let isWorkspaceMember = false;
+  if (!isOwner && !isPublicView) {
+    const ws = await db
+      .select({ id: workspaces.id })
+      .from(workspaces)
+      .where(eq(workspaces.problemId, id))
+      .limit(1);
+    if (ws[0]) {
+      const mem = await db
+        .select({ id: workspaceMembers.id })
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, ws[0].id),
+            eq(workspaceMembers.userId, user.id)
+          )
+        )
+        .limit(1);
+      if (mem[0]) isWorkspaceMember = true;
+    }
+  }
+
+  if (!isOwner && !isPublicView && !isWorkspaceMember) redirect('/dashboard');
 
   // Fetch solutions with latest evaluation
   const latestEvaluationsSubquery = db
@@ -118,7 +143,11 @@ export default async function ProblemDetailPage({
                         existingWorkspaceId={workspace?.id}
                         existingInviteCode={workspace?.inviteCode}
                       />
-                      <EditProblemDialog problem={problem} />
+                      <EditProblemDialog problem={{
+                        ...problem,
+                        stage: problem.stage ?? 'EXPLORING',
+                        seeking: (problem.seeking ?? []) as string[],
+                      }} />
                       <DeleteProblemButton problemId={problem.id} />
                     </>
                   ) : (
@@ -141,6 +170,14 @@ export default async function ProblemDetailPage({
               </div>
             </div>
           </Card>
+
+          {/* Problem Status: Stage lifecycle + Seeking */}
+          <ProblemStatusWidget
+            problemId={problem.id}
+            stage={(problem.stage ?? 'EXPLORING') as ProblemStage}
+            seeking={(problem.seeking ?? []) as SeekingOption[]}
+            isOwner={isOwner}
+          />
 
           {/* Solutions List */}
           <div className="space-y-4">

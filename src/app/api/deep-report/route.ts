@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { solutions, deepReports } from '@/db/schema';
+import { solutions, problems, deepReports, workspaces, workspaceMembers } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { eq, and, desc } from 'drizzle-orm';
 import { generateDeepReport } from '@/lib/deep-report-generator';
@@ -28,13 +28,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { solutionId, problemDescription, solutionContent, domain, force } = schema.parse(body);
 
-    // Verify the user owns this solution
-    const solutionResult = await db.select({ id: solutions.id, userId: solutions.userId })
+    // Verify access permission (solution owner, problem owner, public, or workspace member)
+    const solutionResult = await db.select({ id: solutions.id, userId: solutions.userId, problemId: solutions.problemId })
       .from(solutions).where(eq(solutions.id, solutionId)).limit(1);
 
     if (!solutionResult[0]) return NextResponse.json({ error: 'Solution not found' }, { status: 404 });
-    if (solutionResult[0].userId !== user.id) {
-      return NextResponse.json({ error: 'Only the solution owner can generate the deep report' }, { status: 403 });
+    const sol = solutionResult[0];
+
+    const problemResult = await db.select({ userId: problems.userId, isPublic: problems.isPublic })
+      .from(problems).where(eq(problems.id, sol.problemId)).limit(1);
+    const prob = problemResult[0];
+
+    const isOwner = (prob && prob.userId === user.id) || sol.userId === user.id;
+    let hasAccess = isOwner || prob?.isPublic;
+
+    if (!hasAccess) {
+      const ws = await db.select({ id: workspaces.id }).from(workspaces).where(eq(workspaces.problemId, sol.problemId)).limit(1);
+      if (ws[0]) {
+        const mem = await db.select({ id: workspaceMembers.id }).from(workspaceMembers)
+          .where(and(eq(workspaceMembers.workspaceId, ws[0].id), eq(workspaceMembers.userId, user.id))).limit(1);
+        if (mem[0]) hasAccess = true;
+      }
+    }
+
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Only the solution or problem owner can generate the deep report' }, { status: 403 });
     }
 
     const hash = computeHash(problemDescription, solutionContent);
